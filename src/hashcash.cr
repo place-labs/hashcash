@@ -16,6 +16,8 @@ module HashCash
 
     STAMP_VERSION = 1 # move??
 
+    # new_stamp = HashCash::Stamp.new("resource@resource.com")
+    # my_stamp_string = new_stamp.stamp_string
     def initialize(
       @resource : String,
       @version = STAMP_VERSION,
@@ -23,28 +25,33 @@ module HashCash
       @date = Time.utc,
       @ext = ""
     )
-      @stamp_string = ""
+      @stamp_string = generate(@resource)
     end
 
-    # new_string_stamp = HashCash::Stamp.generate("resource@resource.com")
-    def generate
+    def generate(
+      @resource : String, 
+      @version = STAMP_VERSION,
+      @bits = 20,
+      @date = Time.utc,
+      @ext = ""
+    ) : String
       random_string = Random::Secure.base64(12)
 
       first_part = "#{@version}:#{@bits}:#{date_to_str(@date)}:#{@resource}:#{@ext}:#{random_string}:"
 
       counter = 0
-
-      while @stamp_string == ""
+      stamp_string = ""
+      while stamp_string == ""
         test_stamp = first_part + Base64.encode(counter.to_s)
 
         # check that the first @bits bits are 0s
         digest = Digest::SHA1.digest test_stamp
-        @stamp_string = test_stamp if check digest
+        stamp_string = test_stamp if check digest
 
         counter += 1
       end
 
-      @stamp_string
+      stamp_string
     end
 
     # pass_stamp = HashCash::Stamp.parse("1:20:060408:gab@place.technology::1QTjaYd7niiQA/sc:ePa")
@@ -62,10 +69,11 @@ module HashCash
     end
 
     # verify the stamp
-    def self.verify(resources : String, bits = 20)
+    def self.verify_stamp(resource : String, expiry = Time::Span.new(days: 2), bits = 20)
       # conditions that it would not be valid here
       # => false
-
+      puts resource
+      puts expiry
       # otherwise
       true
     end
@@ -92,3 +100,27 @@ module HashCash
     end
   end
 end
+
+# new_stamp = HashCash::Stamp.new("gab@place.technology")
+# puts new_stamp
+# puts new_stamp.stamp_string
+# puts new_stamp.stamp_string
+# puts new_stamp
+# puts new_stamp.stamp_string
+
+# stamp_string_new = new_stamp.genenerate(hello)
+# puts stamp_string_new
+# verified_stamp = HashCash::Stamp.verify("hello")
+# puts verified_stamp
+
+# HashCash::Stamp.parse("1:20:201203063636:gab@place.technology::0c45PmF/pKa7+FEF:MTUyODI5Ng==")
+
+# my_stamp_string = HashCash::Stamp.new("resource@resource.com")
+# puts my_stamp_string.stamp_string
+
+# generate_stamp_string = my_stamp_string.generate("resource2")
+# puts generate_stamp_string
+# # p! my_stamp_string = new_stamp.stamp_string
+
+# require "hashcash"
+# verfied = verify_stamp("1:20:201203234043:resource@resource.com::ncMrEHUJBxZRKwsO:OTM2MDM=")
