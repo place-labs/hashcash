@@ -9,7 +9,7 @@ TODO: Write a description here
    ```yaml
    dependencies:
      hashcash:
-       github: your-github-user/hashcash
+       github: place-labs/hashcash
    ```
 
 2. Run `shards install`
@@ -36,4 +36,4 @@ TODO: Write development instructions here
 
 ## Contributors
 
-- [your-name-here](https://github.com/your-github-user) - creator and maintainer
+- [GabFitzgerald](https://github.com/GabFitzgerald) - creator and maintainer
