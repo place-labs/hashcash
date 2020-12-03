@@ -10,6 +10,8 @@ module HashCash
     getter resource : String
     getter bits : Int32
     getter date : Time
+    # getter version : Int32
+    # getter stamp_string : String
 
     STAMP_VERSION = 1 # needed???
 
@@ -34,6 +36,8 @@ module HashCash
       raise "date must be a Time object" unless date.class == Time
       @date = date # validate that this is a Time object
 
+      #initialised @stamp_string and @version
+
       # random_string = Base64.endcode(OpenSSL::Random.random_bytes(12))
       # puts random_string
 
@@ -42,11 +46,15 @@ module HashCash
     # Alternatively, a stamp can be passed to the constructor by passing
     # it as a string to the :stamp parameter, e.g.
     #
-    # pass_stamp = HashCash::Stamp.new(:stamp => "1:20:060408:adam@cypherspace.org::1QTjaYd7niiQA/sc:ePa")
+    # pass_stamp = HashCash::Stamp.parse("1:20:060408:adam@cypherspace.org::1QTjaYd7niiQA/sc:ePa")
 
 
     # verify the stamp
     def self.verify(resources : String, bits = 20)
+      # conditions that it would not be valid here 
+      # => false
+
+      # otherwise
       true
     end
   end
