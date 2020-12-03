@@ -38,6 +38,7 @@ module HashCash
 
       #initialised @stamp_string and @version
 
+
       # random_string = Base64.endcode(OpenSSL::Random.random_bytes(12))
       # puts random_string
 
