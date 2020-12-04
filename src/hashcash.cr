@@ -1,7 +1,6 @@
 # TODO: Write documentation for `Hashcash`
 
 require "base64"
-# require "openssl"
 require "digest/sha1"
 
 module HashCash
@@ -69,17 +68,18 @@ module HashCash
     end
 
     # verify the stamp
-    def self.verify_stamp(stamp : String, expiry = Time::Span.new(days: 2), bits = 20)
+    def verify_stamp(stamp : String, expiry = Time::Span.new(days: 2), bits = 20)
       
       # @stamp_string = stamp
-      split_stamp =  stamp.split(":")
+      split_stamp = stamp.split(":")
       # version = split_stamp[0].to_i
       # puts version
       # bits = split_stamp[1].to_i
       # puts bits
       date = split_stamp[2]
-      parsed_date = parse_date(date)
       puts date
+      # parsed_date = parse_date("201203234043")
+      # puts parsed_date
       resource = split_stamp[3]
       # @bits = @bits.to_i
       # if @version.to_i != STAMP_VERSION then
@@ -90,10 +90,20 @@ module HashCash
       # check for correct resource
       raise "Stamp is not valid for the given resource(s)." unless stamp.includes? resource
 	
+
       # check date is within expiry
       # if (Time.utc - date) > expiry
       #   raise "Stamp is expired/not yet valid"
 			# end
+
+
+      # check 0 bits in stamp
+      puts check stamp
+			# if (Digest::SHA1.digest(stamp) >> (bits) != 0)
+			# 	raise "Invalid stamp, not enough 0 bits"
+			# end
+
+      
 
       
       # conditions that it would not be valid here
@@ -117,15 +127,16 @@ module HashCash
     end
 
     # Parse the date contained in the stamp string.
-		private def parse_date(date : String)
-			year  = date[0,2].to_i
-			month = date[2,2].to_i
-			day   = date[4,2].to_i
-			# Those may not exist, but it is irrelevant as ''.to_i is 0
-			hour  = date[6,2].to_i
-			min   = date[8,2].to_i
-			sec   = date[10,2].to_i
-			Time.utc(year, month, day, hour, min, sec)
+		def parse_date(date : String) : Time
+			# year  = date[0,2].to_i
+			# month = date[2,2].to_i
+			# day   = date[4,2].to_i
+			# # Those may not exist, but it is irrelevant as ''.to_i is 0
+			# hour  = date[6,2].to_i
+			# min   = date[8,2].to_i
+			# sec   = date[10,2].to_i
+			# Time.utc(year, month, day, hour, min, sec)
+      Time.utc
 		end
 
     private def check(digest : Bytes, bits = 20) : Bool
@@ -165,4 +176,3 @@ end
 # # p! my_stamp_string = new_stamp.stamp_string
 
 # require "hashcash"
-verfied = HashCash::Stamp.verify_stamp("1:20:201203234043:resource@resource.com::ncMrEHUJBxZRKwsO:OTM2MDM=")
