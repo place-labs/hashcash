@@ -55,7 +55,7 @@ module HashCash
     end
 
     # pass_stamp = HashCash::Stamp.parse("1:20:060408:gab@place.technology::1QTjaYd7niiQA/sc:ePa")
-    def self.parse(stamp_string : String)
+    def self.parse(stamp : String)
       # version =
       # bits =
       # resource =
@@ -69,11 +69,39 @@ module HashCash
     end
 
     # verify the stamp
-    def self.verify_stamp(resource : String, expiry = Time::Span.new(days: 2), bits = 20)
+    def self.verify_stamp(stamp : String, expiry = Time::Span.new(days: 2), bits = 20)
+      
+      # @stamp_string = stamp
+      split_stamp =  stamp.split(":")
+      # version = split_stamp[0].to_i
+      # puts version
+      # bits = split_stamp[1].to_i
+      # puts bits
+      date = split_stamp[2]
+      parsed_date = parse_date(date)
+      puts date
+      resource = split_stamp[3]
+      # @bits = @bits.to_i
+      # if @version.to_i != STAMP_VERSION then
+      # 	raise ArgumentError, "incorrect stamp version #{@version}"
+      # end
+      # @date = parse_date(@date)
+      
+      # check for correct resource
+      raise "Stamp is not valid for the given resource(s)." unless stamp.includes? resource
+	
+      # check date is within expiry
+      # if (Time.utc - date) > expiry
+      #   raise "Stamp is expired/not yet valid"
+			# end
+
+      
       # conditions that it would not be valid here
       # => false
-      puts resource
+      puts stamp
       puts expiry
+
+
       # otherwise
       true
     end
@@ -88,6 +116,18 @@ module HashCash
       end
     end
 
+    # Parse the date contained in the stamp string.
+		private def parse_date(date : String)
+			year  = date[0,2].to_i
+			month = date[2,2].to_i
+			day   = date[4,2].to_i
+			# Those may not exist, but it is irrelevant as ''.to_i is 0
+			hour  = date[6,2].to_i
+			min   = date[8,2].to_i
+			sec   = date[10,2].to_i
+			Time.utc(year, month, day, hour, min, sec)
+		end
+
     private def check(digest : Bytes, bits = 20) : Bool
       full_bytes = bits // 8
       extra_bits = bits % 8
@@ -98,6 +138,8 @@ module HashCash
       return false unless full.all? 0
       partial >> (8 - extra_bits) == 0
     end
+
+
   end
 end
 
@@ -123,4 +165,4 @@ end
 # # p! my_stamp_string = new_stamp.stamp_string
 
 # require "hashcash"
-# verfied = verify_stamp("1:20:201203234043:resource@resource.com::ncMrEHUJBxZRKwsO:OTM2MDM=")
+verfied = HashCash::Stamp.verify_stamp("1:20:201203234043:resource@resource.com::ncMrEHUJBxZRKwsO:OTM2MDM=")
