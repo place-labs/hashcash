@@ -26,8 +26,8 @@ describe Hashcash do
   it "should verify a valid hashcash stamp" do
     new_stamp = Hashcash::Stamp.new("gab@place.technology")
     new_stamp_string = new_stamp.stamp_string
-    puts new_stamp
-    puts new_stamp_string
+    # puts new_stamp
+    # puts new_stamp_string
     new_stamp.verify_stamp(new_stamp_string)
   end
 

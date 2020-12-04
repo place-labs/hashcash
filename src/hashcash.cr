@@ -34,7 +34,7 @@ module Hashcash
     ) : String
       random_string = Random::Secure.base64(12)
 
-      first_part = "#{@version}:#{@bits}:#{date_to_str(@date)}:#{@resource}:#{@ext}:#{random_string}:"
+      first_part = "#{@version}:#{@bits}:#{@date.to_s("%y%m%d%H%M%S")}:#{@resource}:#{@ext}:#{random_string}:"
 
       counter = 0
       stamp_string = ""
@@ -65,7 +65,7 @@ module Hashcash
 
     def verify_stamp(stamp : String, expiry = Time::Span.new(days: 2), bits = 20)
       split_stamp = stamp.split(":")
-      date = parse_date(split_stamp[2])
+      date = Time.parse_utc(split_stamp[2], "%y%m%d%H%M%S")
 
       resource = split_stamp[3]
 
@@ -73,34 +73,12 @@ module Hashcash
       raise "Stamp is not valid for the given resource(s)." unless stamp.includes? resource
 
       # check date is within expiry
-      raise "Stamp is expired/not yet valid" if (Time.utc - date) < expiry
+      raise "Stamp is expired/not yet valid" if (Time.utc - date) > expiry
 
       # check 0 bits in stamp
       raise "Invalid stamp, not enough 0 bits" unless check(Digest::SHA1.digest stamp)
 
       true
-    end
-
-    private def date_to_str(date : Time) : String
-      if (date.second == 0) && (date.hour == 0) && (date.minute == 0)
-        date.to_s("%y%m%d")
-      elsif (date.second == 0)
-        date.to_s("%y%m%d%H%M")
-      else
-        date.to_s("%y%m%d%H%M%S")
-      end
-    end
-
-    # Parse the date contained in the stamp string.
-    private def parse_date(date : String) : Time
-      year = date[0, 2].to_i
-      month = date[2, 2].to_i
-      day = date[4, 2].to_i
-      # Those may not exist, but it is irrelevant as ''.to_i is 0
-      hour = date[6, 2].to_i
-      min = date[8, 2].to_i
-      sec = date[10, 2].to_i
-      Time.utc(year, month, day, hour, min, sec)
     end
 
     private def check(digest : Bytes, bits = 20) : Bool
