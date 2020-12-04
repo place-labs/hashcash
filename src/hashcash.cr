@@ -1,10 +1,9 @@
 # TODO: Write documentation for `Hashcash`
 
 require "base64"
-# require "openssl"
 require "digest/sha1"
 
-module HashCash
+module Hashcash
   VERSION = "0.1.0"
 
   class Stamp
@@ -23,32 +22,36 @@ module HashCash
       @date = Time.utc,
       @ext = ""
     )
-      @stamp_string = ""
+      @stamp_string = generate(@resource)
     end
 
-    # new_string_stamp = HashCash::Stamp.generate("resource@resource.com")
-    def generate
+    def generate(
+      @resource : String,
+      @version = STAMP_VERSION,
+      @bits = 20,
+      @date = Time.utc,
+      @ext = ""
+    ) : String
       random_string = Random::Secure.base64(12)
 
       first_part = "#{@version}:#{@bits}:#{date_to_str(@date)}:#{@resource}:#{@ext}:#{random_string}:"
 
       counter = 0
-
-      while @stamp_string == ""
+      stamp_string = ""
+      while stamp_string == ""
         test_stamp = first_part + Base64.encode(counter.to_s)
 
         # check that the first @bits bits are 0s
         digest = Digest::SHA1.digest test_stamp
-        @stamp_string = test_stamp if check digest
+        stamp_string = test_stamp if check digest
 
         counter += 1
       end
 
-      @stamp_string
+      @stamp_string = stamp_string
     end
 
-    # pass_stamp = HashCash::Stamp.parse("1:20:060408:gab@place.technology::1QTjaYd7niiQA/sc:ePa")
-    def self.parse(stamp_string : String)
+    def self.parse(stamp : String)
       # version =
       # bits =
       # resource =
@@ -58,15 +61,23 @@ module HashCash
       # puts @version
       # puts rand
       # puts counter
-
     end
 
-    # verify the stamp
-    def self.verify(resources : String, bits = 20)
-      # conditions that it would not be valid here
-      # => false
+    def verify_stamp(stamp : String, expiry = Time::Span.new(days: 2), bits = 20)
+      split_stamp = stamp.split(":")
+      date = parse_date(split_stamp[2])
 
-      # otherwise
+      resource = split_stamp[3]
+
+      # check for correct resource
+      raise "Stamp is not valid for the given resource(s)." unless stamp.includes? resource
+
+      # check date is within expiry
+      raise "Stamp is expired/not yet valid" if (Time.utc - date) < expiry
+
+      # check 0 bits in stamp
+      raise "Invalid stamp, not enough 0 bits" unless check(Digest::SHA1.digest stamp)
+
       true
     end
 
@@ -78,6 +89,18 @@ module HashCash
       else
         date.to_s("%y%m%d%H%M%S")
       end
+    end
+
+    # Parse the date contained in the stamp string.
+    private def parse_date(date : String) : Time
+      year = date[0, 2].to_i
+      month = date[2, 2].to_i
+      day = date[4, 2].to_i
+      # Those may not exist, but it is irrelevant as ''.to_i is 0
+      hour = date[6, 2].to_i
+      min = date[8, 2].to_i
+      sec = date[10, 2].to_i
+      Time.utc(year, month, day, hour, min, sec)
     end
 
     private def check(digest : Bytes, bits = 20) : Bool
