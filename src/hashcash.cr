@@ -4,34 +4,32 @@ require "base64"
 require "digest/sha1"
 
 module Hashcash
-  VERSION = "0.1.0"
+  VERSION       = "0.1.0"
+  STAMP_VERSION = 1
+
+  # Hashcash.generate("resource")
+  # => 1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==
+  # OR
+  # Hashcash.generate("hello", 1, 16, Time.utc, "goodbyye")
+  # => 1:16:201206222403:hello:goodbyye:kfwaGRadlD3ddc9G:MTMxMzY5NQ==
+  def self.generate(resource : String, version = STAMP_VERSION, bits = 20, date = Time.utc, ext = "")
+    Hashcash::Stamp.new(version, bits, date, resource, ext).generate
+  end
 
   class Stamp
-    getter resource
-    getter bits
-    getter date
-    getter version : Int32
-    getter stamp_string : String
-
-    STAMP_VERSION = 1 # move??
+    getter version, bits, date, resource, stamp_string
 
     def initialize(
+      @version : Int32,
+      @bits : Int32,
+      @date : Time,
       @resource : String,
-      @version = STAMP_VERSION,
-      @bits = 20,
-      @date = Time.utc,
-      @ext = ""
+      @ext : String,
+      @stamp_string = ""
     )
-      @stamp_string = generate(@resource)
     end
 
-    def generate(
-      @resource : String,
-      @version = STAMP_VERSION,
-      @bits = 20,
-      @date = Time.utc,
-      @ext = ""
-    ) : String
+    def generate : String
       random_string = Random::Secure.base64(12)
 
       first_part = "#{@version}:#{@bits}:#{@date.to_s("%y%m%d%H%M%S")}:#{@resource}:#{@ext}:#{random_string}:"
