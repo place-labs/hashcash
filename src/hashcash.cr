@@ -30,7 +30,7 @@ module Hashcash
     # make resource arg optional
 
     # verifies the string return boolean
-    Hashcash::Stamp.new(resource).verify_stamp(hashcash_stamp)
+    Hashcash::Stamp.new(resource).verify_stamp(hashcash_stamp, resource)
   end
 
   class Stamp
@@ -79,26 +79,28 @@ module Hashcash
       )
     end
 
-    def verify_stamp(stamp : String, expiry = 2.days, bits = 20)
-      # split_stamp = stamp.split(":")
-      # date = Time.parse_utc(split_stamp[2], "%y%m%d%H%M%S")
-
-      # resource = split_stamp[3]
-
+    def verify_stamp(
+      stamp : String, 
+      resource = @resource, 
+      expiry = 2.days, 
+      bits = 20
+    )
       hashcash = Hashcash::Stamp.parse(stamp)
 
-      puts hashcash.resource
-      puts hashcash
+      # check the stamp is correct format?
+
       # check for correct resource
       # raise "Stamp is not valid for the given resource(s)." unless stamp.includes? resource
-      # return false unless stamp.includes? resource
+      return false unless hashcash.resource == resource
 
       # # check date is within expiry
       # raise "Stamp is expired/not yet valid" if (Time.utc - date) > expiry
+      return false if (Time.utc - hashcash.date) > expiry
 
       # # check 0 bits in stamp
-      # digest = Digest::SHA1.digest stamp
+      digest = Digest::SHA1.digest stamp
       # raise "Invalid stamp, not enough 0 bits" unless check digest
+      return false unless check digest
 
       true
     end

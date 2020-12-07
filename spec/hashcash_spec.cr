@@ -71,28 +71,41 @@ describe Hashcash do
     parsed_string.date.should be_a Time
     parsed_string.resource.should eq "resource"
     parsed_string.ext.should eq ""
-    parsed_string.stamp_string.should eq "1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA=="
+    parsed_string.stamp_string.should eq "1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA=="  
+  end
+
+  it "does not parse an invalid stamp" do
+    begin
+      parsed_string = Hashcash::Stamp.parse("invalid_stamp")
+    rescue e
+      e.should be_a(IndexError)
+      # is this the correct error here?
+    end
   end
 
   # test verify class method
   it "should verify a valid hashcash stamp" do
-    new_stamp = Hashcash::Stamp.new("gab@place.technology")
+    new_stamp = Hashcash::Stamp.new("gab@place.technology", date: Time.utc)
 
     new_stamp_string = new_stamp.generate
-    # puts new_stamp
-    # puts new_stamp_string
-    # verified =
-    verified = new_stamp.verify_stamp("new_stamp_string")
+    verified = new_stamp.verify_stamp(new_stamp_string, "gab@place.technology")
     verified.should eq true
 
-    # verified.should eq true
+    not_verified = new_stamp.verify_stamp(new_stamp_string, "not the resource")
+    not_verified.should eq false
+
+    # invalid_stamp = Hashcash::Stamp.verify_stamp("invalid_stamp")
+    # invalid_stamp.should eq false
   end
 
   it "should not verify an invalid hashcash stamp" do
   end
 
   # test high level verify method
-  pending "should verify if a string is a valid hashcash stamp" do
-    verified = Hashcash.verify("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
+  it "should verify if a string is a valid hashcash stamp" do
+    time = Time.utc.to_s("%y%m%d%H%M%S")
+    verified = Hashcash.verify("1:20:#{time}:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
+    verified.should eq true
+    # this is returning false right night
   end
 end
