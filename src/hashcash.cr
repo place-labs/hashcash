@@ -9,22 +9,39 @@ module Hashcash
 
   # Hashcash.generate("resource")
   # => 1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==
-  # OR
-  # Hashcash.generate("hello", 1, 16, Time.utc, "goodbyye")
+  # OR can customise hashcash defaults
+  # Hashcash.generate("hello", version: 1, bits: 16, date: Time.utc, ext: "goodbyye")
   # => 1:16:201206222403:hello:goodbyye:kfwaGRadlD3ddc9G:MTMxMzY5NQ==
-  def self.generate(resource : String, version = STAMP_VERSION, bits = 20, date = Time.utc, ext = "")
-    Hashcash::Stamp.new(version, bits, date, resource, ext).generate
+  def self.generate(
+    resource : String, *,
+    version = 1,
+    bits = 20,
+    date = Time.utc,
+    ext = ""
+  )
+    Hashcash::Stamp.new(resource, version, bits, date, ext).generate
+  end
+
+  # Hashcash.verify("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==")
+  # => true
+  # Hashcash.verify("invalid_string")
+  # => false
+  def self.verify(hashcash_stamp : String, resource : String) : Bool
+    # make resource arg optional
+
+    # verifies the string return boolean
+    Hashcash::Stamp.new(resource).verify_stamp(hashcash_stamp)
   end
 
   class Stamp
-    getter version, bits, date, resource, stamp_string
+    getter version, bits, date, resource, ext, stamp_string
 
     def initialize(
-      @version : Int32,
-      @bits : Int32,
-      @date : Time,
       @resource : String,
-      @ext : String,
+      @version = STAMP_VERSION,
+      @bits = 20,
+      @date = Time.utc,
+      @ext = "",
       @stamp_string = ""
     )
     end
@@ -50,18 +67,19 @@ module Hashcash
     end
 
     def self.parse(stamp : String)
-      # version =
-      # bits =
-      # resource =
-
-      # parse date
-      # (@version, @bits, @date, @resource, ext, rand, counter) = stamp_string.split(':')
-      # puts @version
-      # puts rand
-      # puts counter
+      parts = stamp.split(":")
+      version, bits, date, resource, ext = parts
+      Hashcash::Stamp.new(
+        resource,
+        version.to_i,
+        bits.to_i,
+        Time.parse_utc(date, "%y%m%d%H%M%S"),
+        ext,
+        stamp
+      )
     end
 
-    def verify_stamp(stamp : String, expiry = Time::Span.new(days: 2), bits = 20)
+    def verify_stamp(stamp : String, expiry = 2.days, bits = 20)
       split_stamp = stamp.split(":")
       date = Time.parse_utc(split_stamp[2], "%y%m%d%H%M%S")
 
@@ -74,7 +92,8 @@ module Hashcash
       raise "Stamp is expired/not yet valid" if (Time.utc - date) > expiry
 
       # check 0 bits in stamp
-      raise "Invalid stamp, not enough 0 bits" unless check(Digest::SHA1.digest stamp)
+      digest = Digest::SHA1.digest stamp
+      raise "Invalid stamp, not enough 0 bits" unless check digest
 
       true
     end
