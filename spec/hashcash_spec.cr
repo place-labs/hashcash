@@ -75,14 +75,15 @@ describe Hashcash do
   end
 
   # test verify class method
-  pending "should verify a valid hashcash stamp" do
+  it "should verify a valid hashcash stamp" do
     new_stamp = Hashcash::Stamp.new("gab@place.technology")
 
     new_stamp_string = new_stamp.generate
     # puts new_stamp
     # puts new_stamp_string
     # verified =
-    new_stamp.verify_stamp("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==").should eq true
+    verified = new_stamp.verify_stamp("new_stamp_string")
+    verified.should eq true
 
     # verified.should eq true
   end
