@@ -4,7 +4,6 @@ require "base64"
 require "digest/sha1"
 
 module Hashcash
-  VERSION       = "0.1.0"
   STAMP_VERSION = 1
 
   # Hashcash.generate("resource")
