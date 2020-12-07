@@ -12,7 +12,7 @@ module Hashcash
   # Hashcash.generate("hello", version: 1, bits: 16, date: Time.utc, ext: "goodbyye")
   # => 1:16:201206222403:hello:goodbyye:kfwaGRadlD3ddc9G:MTMxMzY5NQ==
   def self.generate(
-    resource : String, *,
+    resource : String,
     version = 1,
     bits = 20,
     date = Time.utc,
