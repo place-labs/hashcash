@@ -1,6 +1,6 @@
 # hashcash
 
-TODO: Write a description here
+Crystal Lang implemenation of [Hashcash](https://en.wikipedia.org/wiki/Hashcash) proof-of-work system.
 
 ## Installation
 
@@ -19,12 +19,17 @@ TODO: Write a description here
 ```crystal
 require "hashcash"
 ```
+To generate a hashcash string:
 
-TODO: Write usage instructions here
+```crystal
+Hashcash.generate("resource") # => "1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA=="
+```
 
-## Development
+To verify a hashcash string:
 
-TODO: Write development instructions here
+``` crystal
+Hashcash.verify?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource") # => true
+```
 
 ## Contributing
 
