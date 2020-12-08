@@ -16,20 +16,22 @@ Crystal Lang implemenation of [Hashcash](https://en.wikipedia.org/wiki/Hashcash)
 
 ## Usage
 
-```crystal
-require "hashcash"
-```
+  ```crystal
+  require "hashcash"
+  ```
 To generate a hashcash string:
 
-```crystal
-Hashcash.generate("resource") # => "1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA=="
-```
+  ```crystal
+  Hashcash.generate("resource")
+  # => "1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA=="
+  ```
 
 To verify a hashcash string:
 
-``` crystal
-Hashcash.verify?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource") # => true
-```
+  ``` crystal
+  Hashcash.verify?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
+  # => true
+  ```
 
 ## Contributing
 
