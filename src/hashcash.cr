@@ -4,8 +4,6 @@ require "base64"
 require "digest/sha1"
 
 module Hashcash
-  STAMP_VERSION = 1
-
   # Hashcash.generate("resource")
   # => 1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==
   # OR can customise hashcash defaults
@@ -30,6 +28,7 @@ module Hashcash
   end
 
   class Stamp
+    STAMP_VERSION = 1
     getter version, bits, date, resource, ext, stamp_string
 
     def initialize(
