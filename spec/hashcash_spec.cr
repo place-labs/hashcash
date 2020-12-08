@@ -79,7 +79,6 @@ describe Hashcash do
       parsed_string = Hashcash::Stamp.parse("invalid_stamp")
     rescue e
       e.should be_a(IndexError)
-      # is this the correct error here?
     end
   end
 
