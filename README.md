@@ -1,6 +1,6 @@
 # hashcash
 
-TODO: Write a description here
+Crystal Lang implemenation of [Hashcash](https://en.wikipedia.org/wiki/Hashcash) proof-of-work system.
 
 ## Installation
 
@@ -30,13 +30,6 @@ To verify a hashcash string:
 ``` crystal
 Hashcash.verify?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource") # => true
 ```
-
-
-TODO: Write complete usage instructions here
-
-## Development
-
-TODO: Write development instructions here
 
 ## Contributing
 
