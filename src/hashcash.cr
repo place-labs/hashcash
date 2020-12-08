@@ -139,3 +139,5 @@ module Hashcash
     end
   end
 end
+
+puts Hashcash.generate("gab@place.technology")
