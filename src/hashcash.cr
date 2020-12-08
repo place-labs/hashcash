@@ -25,11 +25,11 @@ module Hashcash
   # => true
   # Hashcash.verify("invalid_string")
   # => false
-  def self.verify(hashcash_stamp : String, resource : String) : Bool
+  def self.verify?(hashcash_stamp : String, resource : String) : Bool
     # make resource arg optional
 
     # verifies the string return boolean
-    Hashcash::Stamp.new(resource).verify_stamp(hashcash_stamp, resource)
+    Hashcash::Stamp.new(resource).valid?(hashcash_stamp, resource)
   end
 
   class Stamp
@@ -111,30 +111,23 @@ module Hashcash
       end
     end
 
-    def verify_stamp(
+    def self.verify!(
       stamp : String,
-      resource = @resource,
-      expiry = 2.days,
+      resource : String,
+      time_window = 2.day.ago..2.days.from_now,
       bits = 20
-    )
-      hashcash = Hashcash::Stamp.parse(stamp)
-
-      # check the stamp is correct format?
-
-      # check for correct resource
-      # raise "Stamp is not valid for the given resource(s)." unless stamp.includes? resource
-      return false unless hashcash.resource == resource
-
-      # # check date is within expiry
-      # raise "Stamp is expired/not yet valid" if (Time.utc - date) > expiry
-      return false if (Time.utc - hashcash.date) > expiry
-
-      # # check 0 bits in stamp
-      digest = Digest::SHA1.digest stamp
-      # raise "Invalid stamp, not enough 0 bits" unless check digest
-      return false unless check digest
-
-      true
+    ) : Nil
+      parsed_stamp = Hashcash::Stamp.parse(stamp)
+      case
+      when !parsed_stamp.is_for?(resource)
+        raise "Stamp is not valid for the given resource(s)."
+      when parsed_stamp.expired?(time_window)
+        raise "Stamp is expired/not yet valid"
+      when !parsed_stamp.valid?(bits)
+        raise "Invalid stamp, not enough 0 bits"
+      else
+        true
+      end
     end
 
     private def check(digest : Bytes, bits = 20) : Bool

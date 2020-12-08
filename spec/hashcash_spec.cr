@@ -96,29 +96,27 @@ describe Hashcash do
     invalid_stamp2.should eq false
   end
 
-  # test verify class method
-  it "should verify a valid hashcash stamp" do
-    new_stamp = Hashcash::Stamp.new("gab@place.technology", date: Time.utc)
+  # test verify method
+  it "should raise error for invalid stamps, otherwise return nil" do
+    validity = Hashcash::Stamp.verify!("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
+    validity.should eq nil
 
-    new_stamp_string = new_stamp.generate
-    verified = new_stamp.verify_stamp(new_stamp_string, "gab@place.technology")
-    verified.should eq true
+    begin
+      invalid = Hashcash::Stamp.verify!("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30))
+    rescue e
+      e.message.should eq "Stamp is expired/not yet valid"
+    end
 
-    not_verified = new_stamp.verify_stamp(new_stamp_string, "not the resource")
-    not_verified.should eq false
-
-    # invalid_stamp = Hashcash::Stamp.verify_stamp("invalid_stamp")
-    # invalid_stamp.should eq false
-  end
-
-  it "should not verify an invalid hashcash stamp" do
+    begin
+      invalid = Hashcash::Stamp.verify!("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "goodbye")
+    rescue e
+      e.message.should eq "Stamp is not valid for the given resource(s)."
+    end
   end
 
   # test high level verify method
-  pending "should verify if a string is a valid hashcash stamp" do
-    # this doesn't work delete
-    time = Time.utc.to_s("%y%m%d%H%M%S")
-    verified = Hashcash.verify("1:20:#{time}:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
+  it "should verify if a string is a valid hashcash stamp" do
+    verified = Hashcash.verify?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello")
     verified.should eq true
     # this is returning false right night
   end
