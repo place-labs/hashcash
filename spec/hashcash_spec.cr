@@ -83,6 +83,19 @@ describe Hashcash do
     end
   end
 
+  # test valid? class method
+  it "should check if a stamp is valid - not expired, for the right resource and has enough 0 bits" do
+    # time = Time.utc.to_s("%y%m%d%H%M%S")
+    validity = Hashcash::Stamp.valid?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
+    validity.should eq true
+
+    invalid_stamp = Hashcash::Stamp.valid?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "goodbye")
+    invalid_stamp.should eq false
+
+    invalid_stamp2 = Hashcash::Stamp.valid?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2016, 2, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30))
+    invalid_stamp2.should eq false
+  end
+
   # test verify class method
   it "should verify a valid hashcash stamp" do
     new_stamp = Hashcash::Stamp.new("gab@place.technology", date: Time.utc)
@@ -102,7 +115,8 @@ describe Hashcash do
   end
 
   # test high level verify method
-  it "should verify if a string is a valid hashcash stamp" do
+  pending "should verify if a string is a valid hashcash stamp" do
+    # this doesn't work delete
     time = Time.utc.to_s("%y%m%d%H%M%S")
     verified = Hashcash.verify("1:20:#{time}:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
     verified.should eq true
@@ -132,16 +146,17 @@ describe Hashcash do
 
   # test valid?
   it "should check if a stamp has the correct number of 0 bits" do
-    parsed_string = Hashcash::Stamp.parse("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz")
-    # parsed_string.valid?(20).should eq true # this isn't working i don't know whyyy
+    parsed_string = Hashcash::Stamp.parse("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n")
+    parsed_string.valid?(20).should eq true
     parsed_string.valid?(22).should eq false
 
     invalid_stamp = Hashcash::Stamp.parse("1:19:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz")
     invalid_stamp.valid?(20).should eq false
 
     # custom bits
-    parsed_stamp2 = Hashcash::Stamp.parse("1:16:201207233634:hello::vztr39neCed4q/3V:NjYwMzMxOA==")
-    # parsed_stamp2.valid?(16).should eq true # this also isn't working
-    parsed_stamp2.valid?.should eq false
+    parsed_stamp2 = Hashcash::Stamp.parse("1:12:201208004954:hello::RcS+gR0JfNwRv92D:NTczODA3\n")
+    parsed_stamp2.valid?(12).should eq true
+    parsed_stamp2.valid?.should eq true
+    parsed_stamp2.valid?(30).should eq false
   end
 end

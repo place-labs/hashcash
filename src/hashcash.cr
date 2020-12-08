@@ -92,6 +92,25 @@ module Hashcash
       check(digest, bits)
     end
 
+    def self.valid?(
+      stamp : String,
+      resource : String,
+      time_window = 2.day.ago..2.days.from_now,
+      bits = 20
+    ) : Bool
+      parsed_stamp = Hashcash::Stamp.parse(stamp)
+      case
+      when !parsed_stamp.is_for?(resource)
+        false
+      when parsed_stamp.expired?(time_window)
+        false
+      when !parsed_stamp.valid?(bits)
+        false
+      else
+        true
+      end
+    end
+
     def verify_stamp(
       stamp : String,
       resource = @resource,
@@ -130,5 +149,3 @@ module Hashcash
     end
   end
 end
-
-# puts Hashcash::Stamp.new("hello", bits: 16).generate
