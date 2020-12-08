@@ -78,10 +78,24 @@ module Hashcash
       )
     end
 
+    def is_for?(resource : String) : Bool
+      stamp_resource = @stamp_string.split(":")[3]
+      stamp_resource == resource
+    end
+
+    def expired?(window = 2.days.ago..2.days.from_now) : Bool
+      !window.includes?(@date)
+    end
+
+    def valid?(bits = 20) : Bool
+      digest = Digest::SHA1.digest @stamp_string
+      check(digest, bits)
+    end
+
     def verify_stamp(
-      stamp : String, 
-      resource = @resource, 
-      expiry = 2.days, 
+      stamp : String,
+      resource = @resource,
+      expiry = 2.days,
       bits = 20
     )
       hashcash = Hashcash::Stamp.parse(stamp)
@@ -116,3 +130,5 @@ module Hashcash
     end
   end
 end
+
+# puts Hashcash::Stamp.new("hello", bits: 16).generate
