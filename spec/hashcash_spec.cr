@@ -85,14 +85,14 @@ describe Hashcash do
 
   # test valid? class method
   it "should check if a stamp is valid - not expired, for the right resource and has enough 0 bits" do
-    # time = Time.utc.to_s("%y%m%d%H%M%S")
-    validity = Hashcash::Stamp.valid?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
+    hashcash = Hashcash::Stamp.parse("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz")
+    validity = hashcash.valid?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
     validity.should eq true
 
-    invalid_stamp = Hashcash::Stamp.valid?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "goodbye")
+    invalid_stamp = hashcash.valid?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "goodbye")
     invalid_stamp.should eq false
 
-    invalid_stamp2 = Hashcash::Stamp.valid?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2016, 2, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30))
+    invalid_stamp2 = hashcash.valid?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2016, 2, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30))
     invalid_stamp2.should eq false
   end
 
@@ -116,9 +116,11 @@ describe Hashcash do
 
   # test high level verify method
   it "should verify if a string is a valid hashcash stamp" do
-    verified = Hashcash.verify?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello")
+    verified = Hashcash.verify?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2021, 12, 7, 23, 22, 33))
     verified.should eq true
-    # this is returning false right night
+
+    unverified = Hashcash.verify?("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n", "hello", Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2019, 12, 7, 23, 22, 33))
+    unverified.should eq false
   end
 
   # test is_for?
@@ -145,16 +147,16 @@ describe Hashcash do
   # test valid?
   it "should check if a stamp has the correct number of 0 bits" do
     parsed_string = Hashcash::Stamp.parse("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz\n")
-    parsed_string.valid?(20).should eq true
-    parsed_string.valid?(22).should eq false
+    parsed_string.correct_bits?(20).should eq true
+    parsed_string.correct_bits?(22).should eq false
 
     invalid_stamp = Hashcash::Stamp.parse("1:19:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz")
-    invalid_stamp.valid?(20).should eq false
+    invalid_stamp.correct_bits?(20).should eq false
 
     # custom bits
     parsed_stamp2 = Hashcash::Stamp.parse("1:12:201208004954:hello::RcS+gR0JfNwRv92D:NTczODA3\n")
-    parsed_stamp2.valid?(12).should eq true
-    parsed_stamp2.valid?.should eq true
-    parsed_stamp2.valid?(30).should eq false
+    parsed_stamp2.correct_bits?(12).should eq true
+    parsed_stamp2.correct_bits?.should eq true
+    parsed_stamp2.correct_bits?(30).should eq false
   end
 end

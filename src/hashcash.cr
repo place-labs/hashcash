@@ -21,15 +21,12 @@ module Hashcash
     Hashcash::Stamp.new(resource, version, bits, date, ext).generate
   end
 
-  # Hashcash.verify("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==")
+  # Hashcash.verify?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
   # => true
-  # Hashcash.verify("invalid_string")
+  # Hashcash.verify?("invalid_string", "resource")
   # => false
-  def self.verify?(hashcash_stamp : String, resource : String) : Bool
-    # make resource arg optional
-
-    # verifies the string return boolean
-    Hashcash::Stamp.new(resource).valid?(hashcash_stamp, resource)
+  def self.verify?(hashcash_stamp : String, resource : String, time_window = 2.days.ago..2.days.from_now, bits = 20) : Bool
+    Hashcash::Stamp.new(resource).valid?(hashcash_stamp, resource, time_window, bits)
   end
 
   class Stamp
@@ -87,12 +84,12 @@ module Hashcash
       !window.includes?(@date)
     end
 
-    def valid?(bits = 20) : Bool
+    def correct_bits?(bits = 20) : Bool
       digest = Digest::SHA1.digest @stamp_string
       check(digest, bits)
     end
 
-    def self.valid?(
+    def valid?(
       stamp : String,
       resource : String,
       time_window = 2.day.ago..2.days.from_now,
@@ -104,7 +101,7 @@ module Hashcash
         false
       when parsed_stamp.expired?(time_window)
         false
-      when !parsed_stamp.valid?(bits)
+      when !parsed_stamp.correct_bits?(bits)
         false
       else
         true
@@ -123,13 +120,14 @@ module Hashcash
         raise "Stamp is not valid for the given resource(s)."
       when parsed_stamp.expired?(time_window)
         raise "Stamp is expired/not yet valid"
-      when !parsed_stamp.valid?(bits)
+      when !parsed_stamp.correct_bits?(bits)
         raise "Invalid stamp, not enough 0 bits"
       else
         true
       end
     end
 
+    # TODO update method to count the number of 0s at the start rather than check it matches
     private def check(digest : Bytes, bits = 20) : Bool
       full_bytes = bits // 8
       extra_bits = bits % 8
