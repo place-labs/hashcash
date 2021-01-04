@@ -58,7 +58,7 @@ module Hashcash
         counter += 1
       end
 
-      @stamp_string = stamp_string
+      @stamp_string = stamp_string.chomp
     end
 
     def self.parse(stamp : String)
