@@ -29,7 +29,8 @@ module Hashcash
 
   class Stamp
     STAMP_VERSION = 1
-    getter version, bits, date, resource, ext, stamp_string
+    getter version, bits, date, resource, ext, rand # remove stamp_string
+    property counter
 
     def initialize(
       @resource : String,
@@ -37,14 +38,14 @@ module Hashcash
       @bits = 20,
       @date = Time.utc,
       @ext = "",
-      @stamp_string = ""
+      # @stamp_string = "", # remove
+      @rand = Random::Secure.base64(12),
+      @counter = 0
     )
     end
 
     def generate : String
-      random_string = Random::Secure.base64(12)
-
-      first_part = "#{@version}:#{@bits}:#{@date.to_s("%y%m%d%H%M%S")}:#{@resource}:#{@ext}:#{random_string}:"
+      first_part = "#{@version}:#{@bits}:#{@date.to_s("%y%m%d%H%M%S")}:#{@resource}:#{@ext}:#{@rand}:"
 
       counter = 0
       stamp_string = ""
@@ -58,25 +59,29 @@ module Hashcash
         counter += 1
       end
 
-      @stamp_string = stamp_string.chomp
+      return stamp_string.chomp
+    end
+
+    def to_s : String
+      "#{@version}:#{@bits}:#{@date.to_s("%y%m%d%H%M%S")}:#{@resource}:#{@ext}:#{@rand}:#{Base64.encode(@counter.to_s)}".chomp
     end
 
     def self.parse(stamp : String)
       parts = stamp.split(":")
-      version, bits, date, resource, ext = parts
+      version, bits, date, resource, ext, rand, counter = parts
       Hashcash::Stamp.new(
         resource,
         version.to_i,
         bits.to_i,
         Time.parse_utc(date, "%y%m%d%H%M%S"),
         ext,
-        stamp
+        rand,
+        Base64.decode_string(counter).to_i
       )
     end
 
     def is_for?(resource : String) : Bool
-      stamp_resource = @stamp_string.split(":")[3]
-      stamp_resource == resource
+      self.resource == resource
     end
 
     def expired?(window = 2.days.ago..2.days.from_now) : Bool
@@ -84,7 +89,9 @@ module Hashcash
     end
 
     def correct_bits?(bits = 20) : Bool
-      digest = Digest::SHA1.digest @stamp_string
+      # remove @stamp_string
+      # not working as is
+      digest = Digest::SHA1.digest self.to_s
       check(digest, bits)
     end
 
