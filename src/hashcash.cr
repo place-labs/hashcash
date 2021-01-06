@@ -1,5 +1,3 @@
-# TODO: Write documentation for `Hashcash`
-
 require "base64"
 require "digest/sha1"
 
@@ -24,12 +22,18 @@ module Hashcash
   # Hashcash.verify?("invalid_string", "resource")
   # => false
   def self.verify?(hashcash_stamp : String, resource : String, time_window = 2.days.ago..2.days.from_now, bits = 20) : Bool
-    Hashcash::Stamp.new(resource).valid?(hashcash_stamp, resource, time_window, bits)
+    # Hashcash::Stamp.new(resource).valid?(hashcash_stamp, resource, time_window, bits)
+    
+    # fix
+    # parse the stamp
+    # verify agains the resource passed in
+    stamp = Hashcash::Stamp.parse(hashcash_stamp)
+    stamp.valid?(resource, time_window, bits)
   end
 
   class Stamp
     STAMP_VERSION = 1
-    getter version, bits, date, resource, ext, rand # remove stamp_string
+    getter version, bits, date, resource, ext, rand
     property counter
 
     def initialize(
@@ -45,18 +49,19 @@ module Hashcash
     end
 
     def generate : String
+      # rewrite using to_s class method
       first_part = "#{@version}:#{@bits}:#{@date.to_s("%y%m%d%H%M%S")}:#{@resource}:#{@ext}:#{@rand}:"
 
-      counter = 0
       stamp_string = ""
       while stamp_string == ""
-        test_stamp = first_part + Base64.encode(counter.to_s)
+        test_stamp = first_part + Base64.encode(@counter.to_s)
 
         # check that the first @bits bits are 0s
         digest = Digest::SHA1.digest test_stamp
         stamp_string = test_stamp if check digest
 
-        counter += 1
+        # this shouldn't incremeted once a valid string is found
+        @counter += 1
       end
 
       return stamp_string.chomp
@@ -84,7 +89,11 @@ module Hashcash
       self.resource == resource
     end
 
-    def expired?(window = 2.days.ago..2.days.from_now) : Bool
+    # def self.is_for?(resource : String) : Bool
+    #   @resource == resource
+    # end
+
+    def expired?(window : Range(Time, Time) = 2.days.ago..2.days.from_now) : Bool
       !window.includes?(@date)
     end
 
@@ -96,14 +105,16 @@ module Hashcash
     end
 
     def valid?(
-      stamp : String,
+      # stamp : String,
       resource : String,
       time_window = 2.day.ago..2.days.from_now,
       bits = 20
     ) : Bool
-      parsed_stamp = Hashcash::Stamp.parse(stamp)
+      # parsed_stamp = Hashcash::Stamp.new("hello")
+      parsed_stamp = self
+      # puts parsed_stamp
       case
-      when !parsed_stamp.is_for?(resource)
+      when !(parsed_stamp.is_for?(resource))
         false
       when parsed_stamp.expired?(time_window)
         false
@@ -115,12 +126,13 @@ module Hashcash
     end
 
     def self.verify!(
-      stamp : String,
+      # stamp : String,
       resource : String,
       time_window = 2.day.ago..2.days.from_now,
       bits = 20
     ) : Nil
-      parsed_stamp = Hashcash::Stamp.parse(stamp)
+      parsed_stamp = self
+      # Hashcash::Stamp.parse(stamp)
       case
       when !parsed_stamp.is_for?(resource)
         raise "Stamp is not valid for the given resource(s)."
