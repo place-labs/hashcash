@@ -14,21 +14,48 @@ module Hashcash
     bits = 20,
     date = Time.utc,
     ext = ""
-  )
-    Hashcash::Stamp.new(resource, version, bits, date, ext).update_counter.to_s
+  ) : String
+    hc = Hashcash::Stamp.new(resource, version, bits, date, ext)
+    hc.update_counter
+    hc.to_s
   end
 
   # Hashcash.verify?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
   # => true
   # Hashcash.verify?("invalid_string", "resource")
   # => false
-  def self.verify?(hashcash_stamp : String, resource : String, time_window = 2.days.ago..2.days.from_now, bits = 20) : Bool
-    # Hashcash::Stamp.new(resource).valid?(hashcash_stamp, resource, time_window, bits)
+  def self.verify?(
+    stamp_string : String,
+    resource : String,
+    time_window = 2.days.ago..2.days.from_now,
+    bits = 20
+  ) : Bool
+    stamp = Hashcash::Stamp.parse(stamp_string)
+    stamp.is_for?(resource) && stamp.valid?(time_window) && stamp.correct_bits?(bits)
+  end
 
-    # fix
-    # parse the stamp
-    # verify agains the resource passed in
-    stamp = Hashcash::Stamp.parse(hashcash_stamp)
-    stamp.valid?(resource, time_window, bits)
+  def self.verify!(
+    stamp_string : String,
+    resource : String,
+    time_window = 2.days.ago..2.days.from_now,
+    bits = 20
+  ) : Nil
+    stamp = Hashcash::Stamp.parse(stamp_string)
+    # stamp.is_for?(resource) && stamp.valid?(time_window) && stamp.correct_bits?(bits)
+    # TODO raise errors for each thing
+    #     case
+    #     when !self.is_for?(resource)
+    #       raise "Stamp is not valid for the given resource(s)."
+    #     when !self.valid?(time_window)
+    #       raise "Stamp is expired/not yet valid"
+    #     when !self.correct_bits?(bits)
+    #       raise "Invalid stamp, not enough 0 bits"
+    #     else
+    #       true
+    #     end
+
+    # otherwise
+
+    nil
   end
 end

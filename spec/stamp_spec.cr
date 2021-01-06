@@ -40,7 +40,7 @@ describe Hashcash::Stamp do
     # when counter is 0, string should end with 0 base64 encoded (MA==)
     new_stamp.to_s.should end_with ":MA=="
     # string should be invalid here
-    Hashcash::Stamp.parse(new_stamp.to_s).valid?("hello").should eq false
+    Hashcash.verify?(new_stamp.to_s, "hello").should eq false
 
     new_stamp.update_counter # this method might be renamed
     new_stamp.counter.should be > 0
@@ -50,20 +50,20 @@ describe Hashcash::Stamp do
     new_stamp_string.should start_with "1:20:"
 
     # string should now be valid
-    Hashcash::Stamp.parse(new_stamp_string).valid?("hello").should eq true
+    Hashcash.verify?(new_stamp_string, "hello").should eq true
 
     # with all of the args
     custom_stamp = Hashcash::Stamp.new("hi@hello.com", 1, 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye")
     custom_stamp.counter.should eq 0
     custom_stamp.to_s.should end_with ":MA=="
-    Hashcash::Stamp.parse(new_stamp.to_s).valid?("hello", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq false
+    Hashcash.verify?(custom_stamp.to_s, "hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq false
 
     custom_stamp.update_counter
     custom_stamp.counter.should be > 0
 
     custom_stamp_string = custom_stamp.to_s
     custom_stamp_string.should start_with "1:16:160215102030:hi@hello.com:goodbye:"
-    Hashcash::Stamp.parse(custom_stamp_string).valid?("hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq true
+    Hashcash.verify?(custom_stamp_string, "hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq true
   end
 
   # test parse class method
@@ -105,15 +105,15 @@ describe Hashcash::Stamp do
   # test expired?
   it "should check if a stamp is expired" do
     parsed_string = Hashcash::Stamp.parse("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz")
-    parsed_string.expired?(Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2021, 12, 7, 23, 22, 33)).should eq false
-    parsed_string.expired?(Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2019, 12, 7, 23, 22, 33)).should eq true
+    parsed_string.valid?(Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2021, 12, 7, 23, 22, 33)).should eq true
+    parsed_string.valid?(Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2019, 12, 7, 23, 22, 33)).should eq false
 
     parsed_string2 = Hashcash::Stamp.parse("1:20:201107232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz")
-    parsed_string2.expired?.should eq true
+    parsed_string2.valid?.should eq false
 
     time = Time.utc.to_s("%y%m%d%H%M%S")
     parsed_string3 = Hashcash::Stamp.parse("1:20:#{time}:hello::/AwX0LmTwb3g7nx9:NjAwNDcz")
-    parsed_string3.expired?.should eq false
+    parsed_string3.valid?.should eq true
   end
 
   # test correct_bits?
@@ -132,42 +132,5 @@ describe Hashcash::Stamp do
     parsed_stamp2.correct_bits?.should eq true
     parsed_stamp2.correct_bits?(20).should eq false
     parsed_stamp2.correct_bits?(30).should eq false
-  end
-
-  # test valid? class method
-  it "should check if a stamp is valid - not expired, for the right resource and has enough 0 bits" do
-    hashcash = Hashcash::Stamp.parse("1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng==")
-
-    validity = hashcash.valid?("hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
-    validity.should eq true
-
-    invalid_stamp = hashcash.valid?("goodbye")
-    invalid_stamp.should eq false
-
-    invalid_stamp2 = hashcash.valid?("hello", Time.utc(2016, 2, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30))
-    invalid_stamp2.should eq false
-
-    invalid_stamp3 = hashcash.valid?("hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30), 40)
-    invalid_stamp3.should eq false
-  end
-
-  # test verify method
-  it "should raise error for invalid stamps, otherwise return nil" do
-    hashcash = Hashcash::Stamp.parse("1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng==")
-
-    validity = hashcash.valid!("hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
-    validity.should eq nil
-
-    begin
-      invalid = hashcash.valid!("hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30))
-    rescue e
-      e.message.should eq "Stamp is expired/not yet valid"
-    end
-
-    begin
-      invalid = hashcash.valid!("goodbye")
-    rescue e
-      e.message.should eq "Stamp is not valid for the given resource(s)."
-    end
   end
 end

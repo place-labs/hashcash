@@ -59,8 +59,8 @@ class Hashcash::Stamp
     self.resource == resource
   end
 
-  def expired?(window : Range(Time, Time) = 2.days.ago..2.days.from_now) : Bool
-    !window.includes?(date)
+  def valid?(window : Range(Time, Time) = 2.days.ago..2.days.from_now) : Bool
+    window.includes?(date)
   end
 
   def correct_bits?(bits = bits) : Bool
@@ -68,39 +68,39 @@ class Hashcash::Stamp
     check(digest, bits)
   end
 
-  def valid?(
-    resource : String,
-    time_window = 2.day.ago..2.days.from_now,
-    bits = 20
-  ) : Bool
-    case
-    when !(self.is_for?(resource))
-      false
-    when self.expired?(time_window)
-      false
-    when !self.correct_bits?(bits)
-      false
-    else
-      true
-    end
-  end
+  #   def valid?(
+  #     resource : String,
+  #     time_window = 2.day.ago..2.days.from_now,
+  #     bits = 20
+  #   ) : Bool
+  #     case
+  #     when !(self.is_for?(resource))
+  #       false
+  #     when !self.valid?(time_window)
+  #       false
+  #     when !self.correct_bits?(bits)
+  #       false
+  #     else
+  #       true
+  #     end
+  #   end
 
-  def valid!(
-    resource : String,
-    time_window = 2.day.ago..2.days.from_now,
-    bits = 20
-  ) : Nil
-    case
-    when !self.is_for?(resource)
-      raise "Stamp is not valid for the given resource(s)."
-    when self.expired?(time_window)
-      raise "Stamp is expired/not yet valid"
-    when !self.correct_bits?(bits)
-      raise "Invalid stamp, not enough 0 bits"
-    else
-      true
-    end
-  end
+  #   def valid!(
+  #     resource : String,
+  #     time_window = 2.day.ago..2.days.from_now,
+  #     bits = 20
+  #   ) : Nil
+  #     case
+  #     when !self.is_for?(resource)
+  #       raise "Stamp is not valid for the given resource(s)."
+  #     when !self.valid?(time_window)
+  #       raise "Stamp is expired/not yet valid"
+  #     when !self.correct_bits?(bits)
+  #       raise "Invalid stamp, not enough 0 bits"
+  #     else
+  #       true
+  #     end
+  #   end
 
   # TODO update method to count the number of 0s at the start rather than check it matches
   private def check(digest : Bytes, bits = 20) : Bool
