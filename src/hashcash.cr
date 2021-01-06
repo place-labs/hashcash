@@ -14,7 +14,7 @@ module Hashcash
     date = Time.utc,
     ext = ""
   )
-    Hashcash::Stamp.new(resource, version, bits, date, ext).generate
+    Hashcash::Stamp.new(resource, version, bits, date, ext).update_counter.to_s
   end
 
   # Hashcash.verify?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
@@ -23,7 +23,7 @@ module Hashcash
   # => false
   def self.verify?(hashcash_stamp : String, resource : String, time_window = 2.days.ago..2.days.from_now, bits = 20) : Bool
     # Hashcash::Stamp.new(resource).valid?(hashcash_stamp, resource, time_window, bits)
-    
+
     # fix
     # parse the stamp
     # verify agains the resource passed in
@@ -47,9 +47,8 @@ module Hashcash
     )
     end
 
-    # probably rename # find_valid_counter ? 
     def update_counter
-      until check (Digest::SHA1.digest self.to_s)
+      until check (Digest::SHA1.digest self.to_s), bits
         @counter += 1
       end
     end
@@ -71,8 +70,12 @@ module Hashcash
     end
 
     def self.parse(stamp : String)
+      raise "invalid stamp format, should contain 6 colons (:)" unless stamp.count(':') == 6
       parts = stamp.split(":")
       version, bits, date, resource, ext, rand, counter = parts
+
+      raise "stamp version #{version} not supported" unless version == STAMP_VERSION.to_s
+
       Hashcash::Stamp.new(
         resource,
         version.to_i,
@@ -88,17 +91,11 @@ module Hashcash
       self.resource == resource
     end
 
-    # def self.is_for?(resource : String) : Bool
-    #   @resource == resource
-    # end
-
     def expired?(window : Range(Time, Time) = 2.days.ago..2.days.from_now) : Bool
-      !window.includes?(@date)
+      !window.includes?(date)
     end
 
-    def correct_bits?(bits = 20) : Bool
-      # remove @stamp_string
-      # not working as is
+    def correct_bits?(bits = bits) : Bool
       digest = Digest::SHA1.digest self.to_s
       check(digest, bits)
     end
