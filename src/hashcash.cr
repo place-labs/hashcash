@@ -42,34 +42,23 @@ module Hashcash
       @bits = 20,
       @date = Time.utc,
       @ext = "",
-      # @stamp_string = "", # remove
       @rand = Random::Secure.base64(12),
       @counter = 0
     )
     end
 
-    def generate : String
-      # rewrite using to_s class method
-      first_part = "#{@version}:#{@bits}:#{@date.to_s("%y%m%d%H%M%S")}:#{@resource}:#{@ext}:#{@rand}:"
-
-      stamp_string = ""
-      while stamp_string == ""
-        test_stamp = first_part + Base64.encode(@counter.to_s)
-
-        # check that the first @bits bits are 0s
-        digest = Digest::SHA1.digest test_stamp
-        stamp_string = test_stamp if check digest
-
-        # this shouldn't incremeted once a valid string is found
+    # probably rename # find_valid_counter ? 
+    def update_counter
+      until check (Digest::SHA1.digest self.to_s)
         @counter += 1
       end
-
-      return stamp_string.chomp
     end
 
-    def to_s : String
+    def to_s(io : IO) : Nil
       "#{@version}:#{@bits}:#{@date.to_s("%y%m%d%H%M%S")}:#{@resource}:#{@ext}:#{@rand}:#{Base64.encode(@counter.to_s)}".chomp
     end
+
+
 
     def self.parse(stamp : String)
       parts = stamp.split(":")

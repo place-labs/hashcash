@@ -21,7 +21,7 @@ describe Hashcash do
     custom_stamp.date.hour.should eq Time.utc.hour
   end
 
-  # test class to_s method
+  # test to_s class method
   it "should convert a hashcash stamp instance to a string" do
     new_stamp = Hashcash::Stamp.new("gab@place.technology").to_s
     new_stamp.should be_a String
@@ -36,30 +36,34 @@ describe Hashcash do
   # test generate class method
   it "should generate a hashcash stamp string" do
     new_stamp = Hashcash::Stamp.new("hello")
-    pp! new_stamp.counter
-    pp! new_stamp.to_s
-    new_stamp_string = new_stamp.generate
-    pp! new_stamp_string
+    new_stamp.counter.should eq 0
+    # when counter is 0, string should end with 0 base64 encoded (MA==)
+    new_stamp.to_s.should end_with ":MA=="
+    # string should be invalid here
+    Hashcash::Stamp.parse(new_stamp.to_s).valid?("hello").should eq false
 
-    pp! new_stamp.counter
-    pp! new_stamp.to_s
+    new_stamp.update_counter # this method might be renamed
+    new_stamp.counter.should be > 0
 
-    new_stamp_string.should contain "hello"
-    new_stamp_string[0].should eq '1'
-    new_stamp_string.should contain "1:20:"
-    # new_stamp.stamp_string.should contain "hello"
+    new_stamp_string = new_stamp.to_s
+    new_stamp_string.should contain ":hello::"
+    new_stamp_string.should start_with "1:20:"
+
+    # string should now be valid
+    Hashcash::Stamp.parse(new_stamp_string).valid?("hello").should eq true
+    
 
     # with all of the args
-    custom_stamp = Hashcash::Stamp.new("hi@hello.com", 2, 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye")
-    puts custom_stamp.counter
-    custom_stamp_string = custom_stamp.generate
+    # custom_stamp = Hashcash::Stamp.new("hi@hello.com", 2, 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye")
+    # puts custom_stamp.counter
+    # custom_stamp_string = custom_stamp.generate
 
-    custom_stamp_string.should contain "2:16:160215102030:hi@hello.com:goodbye:"
+    # custom_stamp_string.should contain "2:16:160215102030:hi@hello.com:goodbye:"
 
-    puts custom_stamp_string
+    # puts custom_stamp_string
 
-    # check that it's valid
-    puts custom_stamp.counter
+    # # check that it's valid
+    # puts custom_stamp.counter
     # Hashcash::Stamp.parse(custom_stamp_string).valid?("hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30)).should eq true
 
   end
