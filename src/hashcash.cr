@@ -55,10 +55,20 @@ module Hashcash
     end
 
     def to_s(io : IO) : Nil
-      "#{@version}:#{@bits}:#{@date.to_s("%y%m%d%H%M%S")}:#{@resource}:#{@ext}:#{@rand}:#{Base64.encode(@counter.to_s)}".chomp
+      io << version
+      io << ':'
+      io << bits
+      io << ':'
+      io << date.to_s("%y%m%d%H%M%S")
+      io << ':'
+      io << resource
+      io << ':'
+      io << ext
+      io << ':'
+      io << rand
+      io << ':'
+      io << Base64.encode(counter.to_s).chomp
     end
-
-
 
     def self.parse(stamp : String)
       parts = stamp.split(":")

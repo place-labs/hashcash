@@ -51,21 +51,19 @@ describe Hashcash do
 
     # string should now be valid
     Hashcash::Stamp.parse(new_stamp_string).valid?("hello").should eq true
-    
 
     # with all of the args
-    # custom_stamp = Hashcash::Stamp.new("hi@hello.com", 2, 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye")
-    # puts custom_stamp.counter
-    # custom_stamp_string = custom_stamp.generate
+    custom_stamp = Hashcash::Stamp.new("hi@hello.com", 2, 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye")
+    custom_stamp.counter.should eq 0
+    custom_stamp.to_s.should end_with ":MA=="
+    Hashcash::Stamp.parse(new_stamp.to_s).valid?("hello", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq false
 
-    # custom_stamp_string.should contain "2:16:160215102030:hi@hello.com:goodbye:"
-
-    # puts custom_stamp_string
-
-    # # check that it's valid
-    # puts custom_stamp.counter
-    # Hashcash::Stamp.parse(custom_stamp_string).valid?("hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30)).should eq true
-
+    custom_stamp.update_counter
+    custom_stamp.counter.should be > 0
+    
+    custom_stamp_string = custom_stamp.to_s
+    custom_stamp_string.should start_with "2:16:160215102030:hi@hello.com:goodbye:"
+    Hashcash::Stamp.parse(custom_stamp_string).valid?("hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq true
   end
 
   # test Hashcash.generate
@@ -93,7 +91,7 @@ describe Hashcash do
   end
 
   # test parse class method
-  pending "should parse a string to a Hashcash::Stamp" do
+  it "should parse a string to a Hashcash::Stamp" do
     parsed_string = Hashcash::Stamp.parse("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==")
 
     parsed_string.version.should eq 1
@@ -105,10 +103,11 @@ describe Hashcash do
     # parsed_string.stamp_string.should eq "1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA=="
   end
 
-  pending "does not parse an invalid stamp" do
+  it "should not parse an invalid stamp" do
     begin
       parsed_string = Hashcash::Stamp.parse("invalid_stamp")
     rescue e
+      # what error should this actually be??
       e.should be_a(IndexError)
     end
   end
