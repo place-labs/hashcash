@@ -37,7 +37,6 @@ class Hashcash::Stamp
   end
 
   def self.parse(stamp : String)
-    # raise "invalid stamp format, should contain 6 colons (:)" unless correct_format?(stamp)
     raise "invalid stamp format, should contain 6 colons (:)" unless stamp.count(':') == 6
     parts = stamp.split(":")
     version, bits, date, resource, ext, rand, counter = parts
@@ -68,40 +67,6 @@ class Hashcash::Stamp
     check(digest, bits)
   end
 
-  #   def valid?(
-  #     resource : String,
-  #     time_window = 2.day.ago..2.days.from_now,
-  #     bits = 20
-  #   ) : Bool
-  #     case
-  #     when !(self.is_for?(resource))
-  #       false
-  #     when !self.valid?(time_window)
-  #       false
-  #     when !self.correct_bits?(bits)
-  #       false
-  #     else
-  #       true
-  #     end
-  #   end
-
-  #   def valid!(
-  #     resource : String,
-  #     time_window = 2.day.ago..2.days.from_now,
-  #     bits = 20
-  #   ) : Nil
-  #     case
-  #     when !self.is_for?(resource)
-  #       raise "Stamp is not valid for the given resource(s)."
-  #     when !self.valid?(time_window)
-  #       raise "Stamp is expired/not yet valid"
-  #     when !self.correct_bits?(bits)
-  #       raise "Invalid stamp, not enough 0 bits"
-  #     else
-  #       true
-  #     end
-  #   end
-
   # TODO update method to count the number of 0s at the start rather than check it matches
   private def check(digest : Bytes, bits = 20) : Bool
     full_bytes = bits // 8
@@ -112,9 +77,5 @@ class Hashcash::Stamp
 
     return false unless full.all? 0
     partial >> (8 - extra_bits) == 0
-  end
-
-  private def correct_format?(stamp : String) : Bool
-    stamp.count(':') == 6
   end
 end

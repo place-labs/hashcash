@@ -46,26 +46,27 @@ describe Hashcash do
   end
 
   # test verify!
-  it "should return appropriate errors for invalid stamp_strings" do
+  it "should raise appropriate errors for invalid stamp_strings" do
+    string = "1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng=="
+    validity = Hashcash.verify!(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
+    validity.should eq nil
+
+    begin
+      invalid = Hashcash.verify!(string, "hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30))
+    rescue e
+      e.message.should eq "Stamp is expired/not yet valid"
+    end
+
+    begin
+      invalid = Hashcash.verify!(string, "goodbye")
+    rescue e
+      e.message.should eq "Stamp is not valid for the given resource(s)."
+    end
+
+    begin
+      invalid = Hashcash.verify!("1:20:210107002222:hello::4eGAF9pYLrO7AuT8:MA==", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
+    rescue e
+      e.message.should eq "Invalid stamp, not enough 0 bits"
+    end
   end
-
-  #   # test verify method
-  #   it "should raise error for invalid stamps, otherwise return nil" do
-  #     hashcash = Hashcash::Stamp.parse("1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng==")
-
-  #     validity = hashcash.valid!("hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
-  #     validity.should eq nil
-
-  #     begin
-  #       invalid = hashcash.valid!("hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30))
-  #     rescue e
-  #       e.message.should eq "Stamp is expired/not yet valid"
-  #     end
-
-  #     begin
-  #       invalid = hashcash.valid!("goodbye")
-  #     rescue e
-  #       e.message.should eq "Stamp is not valid for the given resource(s)."
-  #     end
-  #   end
 end

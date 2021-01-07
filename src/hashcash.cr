@@ -34,6 +34,7 @@ module Hashcash
     stamp.is_for?(resource) && stamp.valid?(time_window) && stamp.correct_bits?(bits)
   end
 
+  # TODO doc for this method
   def self.verify!(
     stamp_string : String,
     resource : String,
@@ -41,21 +42,16 @@ module Hashcash
     bits = 20
   ) : Nil
     stamp = Hashcash::Stamp.parse(stamp_string)
-    # stamp.is_for?(resource) && stamp.valid?(time_window) && stamp.correct_bits?(bits)
-    # TODO raise errors for each thing
-    #     case
-    #     when !self.is_for?(resource)
-    #       raise "Stamp is not valid for the given resource(s)."
-    #     when !self.valid?(time_window)
-    #       raise "Stamp is expired/not yet valid"
-    #     when !self.correct_bits?(bits)
-    #       raise "Invalid stamp, not enough 0 bits"
-    #     else
-    #       true
-    #     end
 
-    # otherwise
-
-    nil
+    case
+    when !stamp.is_for?(resource)
+      raise "Stamp is not valid for the given resource(s)."
+    when !stamp.valid?(time_window)
+      raise "Stamp is expired/not yet valid"
+    when !stamp.correct_bits?(bits)
+      raise "Invalid stamp, not enough 0 bits"
+    else
+      nil
+    end
   end
 end
