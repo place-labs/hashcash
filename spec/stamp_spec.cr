@@ -1,7 +1,7 @@
 require "./spec_helper"
 
 describe Hashcash::Stamp do
-  it "should initialise a new hashcash instance" do
+  it ".new" do
     # with just resource arg
     new_stamp = Hashcash::Stamp.new("gab@place.technology")
 
@@ -21,8 +21,7 @@ describe Hashcash::Stamp do
     custom_stamp.date.hour.should eq Time.utc.hour
   end
 
-  # test to_s class method
-  it "should convert a hashcash stamp instance to a string" do
+  it "#to_s" do
     new_stamp = Hashcash::Stamp.new("gab@place.technology").to_s
     new_stamp.should be_a String
     new_stamp.should start_with "1:20:"
@@ -33,8 +32,7 @@ describe Hashcash::Stamp do
     custom_stamp.should start_with "2:16:160215102030:hi@hello.com:goodbye:"
   end
 
-  # test update_counter class method
-  it "should generate a hashcash stamp string" do
+  it "#update_counter" do
     new_stamp = Hashcash::Stamp.new("hello")
     new_stamp.counter.should eq 0
     # when counter is 0, string should end with 0 base64 encoded (MA==)
@@ -66,8 +64,7 @@ describe Hashcash::Stamp do
     Hashcash.verify?(custom_stamp_string, "hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq true
   end
 
-  # test parse class method
-  it "should parse a string to a Hashcash::Stamp" do
+  it ".parse" do
     parsed_string = Hashcash::Stamp.parse("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==")
 
     parsed_string.version.should eq 1
@@ -95,15 +92,13 @@ describe Hashcash::Stamp do
     end
   end
 
-  # test is_for?
-  it "should check if the correct resource is in the stamp" do
+  it "#is_for?" do
     parsed_string = Hashcash::Stamp.parse("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==")
     parsed_string.is_for?("resource").should eq true
     parsed_string.is_for?("not the resource").should eq false
   end
 
-  # test expired?
-  it "should check if a stamp is expired" do
+  it "#valid?" do
     parsed_string = Hashcash::Stamp.parse("1:20:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz")
     parsed_string.valid?(Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2021, 12, 7, 23, 22, 33)).should eq true
     parsed_string.valid?(Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2019, 12, 7, 23, 22, 33)).should eq false
@@ -116,8 +111,7 @@ describe Hashcash::Stamp do
     parsed_string3.valid?.should eq true
   end
 
-  # test correct_bits?
-  it "should check if a stamp has the correct number of 0 bits" do
+  it "#correct_bits?" do
     parsed_string = Hashcash::Stamp.parse("1:20:210106051438:hello::0Ni8oRBm7K0noD1j:NDEyNTQ5")
     parsed_string.correct_bits?(20).should eq true
     parsed_string.correct_bits?(22).should eq false

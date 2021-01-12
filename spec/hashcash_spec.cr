@@ -1,8 +1,7 @@
 require "./spec_helper"
 
 describe Hashcash do
-  # test Hashcash.generate
-  it "should initilaise and generate a hashcash stamp using the high level generate method" do
+  it ".generate" do
     # just resource arg
     new_stamp = Hashcash.generate("myemail@email.com") # should => "1:20:201206233107:myemail@email.com::hj8j8uUT+MCI/T06:MzI0OTk5\n"
 
@@ -25,8 +24,7 @@ describe Hashcash do
     custom_stamp3.should contain "2:12:160215102030:hello@email.com:bye:"
   end
 
-  # test high level verify? method
-  it "should verify if a string is a valid hashcash stamp" do
+  it ".verify?" do
     string = "1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng=="
 
     verified = Hashcash.verify?(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
@@ -45,8 +43,7 @@ describe Hashcash do
     unverified4.should eq false
   end
 
-  # test verify!
-  it "should raise appropriate errors for invalid stamp_strings" do
+  it ".verify!" do
     string = "1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng=="
     validity = Hashcash.verify!(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
     validity.should eq nil
