@@ -1,13 +1,9 @@
 require "base64"
 require "digest/sha1"
 require "./stamp"
+require "./exceptions"
 
-module Hashcash
-  #ref this into its own file
-  class InvalidResource < Exception; end
-  class Expired < Exception; end
-  class InvalidPreimage < Exception; end
- 
+module Hashcash 
   # Hashcash.generate("resource")
   # => 1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==
   # OR can customise hashcash defaults
