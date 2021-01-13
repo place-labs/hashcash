@@ -51,19 +51,19 @@ describe Hashcash do
     begin
       invalid = Hashcash.verify!(string, "hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30))
     rescue e
-      e.message.should eq "Stamp is expired/not yet valid"
+      e.message.should eq "Hashcash stamp is expired"
     end
 
     begin
       invalid = Hashcash.verify!(string, "goodbye")
     rescue e
-      e.message.should eq "Stamp is not valid for the given resource(s)."
+      e.message.should eq "Hashcash stamp is invalid for goodbye"
     end
 
     begin
       invalid = Hashcash.verify!("1:20:210107002222:hello::4eGAF9pYLrO7AuT8:MA==", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
     rescue e
-      e.message.should eq "Invalid stamp, not enough 0 bits"
+      e.message.should eq "20 bits required"
     end
   end
 end

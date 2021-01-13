@@ -3,6 +3,11 @@ require "digest/sha1"
 require "./stamp"
 
 module Hashcash
+  #ref this into its own file
+  class InvalidResource < Exception; end
+  class Expired < Exception; end
+  class InvalidPreimage < Exception; end
+ 
   # Hashcash.generate("resource")
   # => 1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==
   # OR can customise hashcash defaults
@@ -45,11 +50,11 @@ module Hashcash
 
     case
     when !stamp.is_for?(resource)
-      raise "Stamp is not valid for the given resource(s)."
+      raise InvalidResource.new("Hashcash stamp is invalid for #{resource}")
     when !stamp.valid?(time_window)
-      raise "Stamp is expired/not yet valid"
+      raise Expired.new("Hashcash stamp is expired")
     when !stamp.correct_bits?(bits)
-      raise "Invalid stamp, not enough 0 bits"
+      raise InvalidPreimage.new("#{bits} bits required")
     else
       nil
     end
