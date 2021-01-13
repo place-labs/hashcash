@@ -9,7 +9,7 @@ describe Hashcash do
     new_stamp.should contain "1:20:"
     new_stamp.should contain ":myemail@email.com::"
 
-    # test using all of the args - test different combinations
+    # using all of the args - different combinations
     custom_stamp = Hashcash.generate("hello@email.com", bits: 16)
     custom_stamp.should be_a String
     custom_stamp.should contain "1:16:"
@@ -27,43 +27,20 @@ describe Hashcash do
   it ".verify?" do
     string = "1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng=="
 
-    verified = Hashcash.verify?(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
-    verified.should eq true
-
-    unverified = Hashcash.verify?(string, "hello", Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2019, 12, 7, 23, 22, 33))
-    unverified.should eq false
-
-    unverified2 = Hashcash.verify?(string, "goodbye")
-    unverified2.should eq false
-
-    unverified3 = Hashcash.verify?(string, "hello", Time.utc(2016, 2, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30))
-    unverified3.should eq false
-
-    unverified4 = Hashcash.verify?(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30), 40)
-    unverified4.should eq false
+    Hashcash.verify?(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)).should be_true
+    Hashcash.verify?(string, "hello", Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2019, 12, 7, 23, 22, 33)).should be_false
+    Hashcash.verify?(string, "goodbye").should be_false
+    Hashcash.verify?(string, "hello", Time.utc(2016, 2, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30)).should be_false
+    Hashcash.verify?(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30), 40).should be_false
   end
 
   it ".verify!" do
     string = "1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng=="
-    validity = Hashcash.verify!(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
-    validity.should eq nil
+    Hashcash.verify!(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)).should be_nil
+    # validity
 
-    begin
-      invalid = Hashcash.verify!(string, "hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30))
-    rescue e
-      e.message.should eq "Hashcash stamp is expired"
-    end
-
-    begin
-      invalid = Hashcash.verify!(string, "goodbye")
-    rescue e
-      e.message.should eq "Hashcash stamp is invalid for goodbye"
-    end
-
-    begin
-      invalid = Hashcash.verify!("1:20:210107002222:hello::4eGAF9pYLrO7AuT8:MA==", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30))
-    rescue e
-      e.message.should eq "20 bits required"
-    end
+    expect_raises(Expired) { Hashcash.verify!(string, "hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30)) }
+    expect_raises(InvalidResource) { Hashcash.verify!(string, "goodbye") }
+    expect_raises(InvalidPreimage) { Hashcash.verify!("1:20:210107002222:hello::4eGAF9pYLrO7AuT8:MA==", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)) }
   end
 end

@@ -2,7 +2,7 @@ require "./spec_helper"
 
 describe Hashcash::Stamp do
   it ".new" do
-    # with just resource arg
+    # just resource arg
     new_stamp = Hashcash::Stamp.new("gab@place.technology")
 
     new_stamp.resource.should eq "gab@place.technology"
@@ -12,7 +12,7 @@ describe Hashcash::Stamp do
     new_stamp.counter.should be_a Int32
     new_stamp.rand.should be_a String
 
-    # with all of the args
+    # all of the args
     custom_stamp = Hashcash::Stamp.new("hi@hello.com", 2, 16, Time.utc, "goodbye")
 
     custom_stamp.resource.should eq "hi@hello.com"
@@ -82,13 +82,13 @@ describe Hashcash::Stamp do
       Hashcash::Stamp.parse("invalid_stamp")
     rescue e
       e.should be_a(Exception)
-      e.message.should eq "invalid stamp format, should contain 6 colons (:)"
+      e.message.should eq "Invalid stamp format, should contain 6 colons (:)"
     end
 
     begin
       Hashcash::Stamp.parse("2:12:160215102030:hello@email.com:bye:invalid_stamp:counter")
     rescue e
-      e.message.to_s.should eq "stamp version 2 not supported"
+      e.message.to_s.should eq "Stamp version 2 not supported"
     end
   end
 

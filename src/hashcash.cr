@@ -3,7 +3,7 @@ require "digest/sha1"
 require "./stamp"
 require "./exceptions"
 
-module Hashcash 
+module Hashcash
   # Hashcash.generate("resource")
   # => 1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==
   # OR can customise hashcash defaults

@@ -1,7 +1,6 @@
 class Hashcash::Stamp
-  STAMP_VERSION = 1
-  getter version, bits, date, resource, ext, rand
-  property counter
+  STAMP_VERSION = "1"
+  getter version, bits, date, resource, ext, rand, counter
 
   def initialize(
     @resource : String,
@@ -37,11 +36,11 @@ class Hashcash::Stamp
   end
 
   def self.parse(stamp : String)
-    raise "invalid stamp format, should contain 6 colons (:)" unless stamp.count(':') == 6
+    raise "Invalid stamp format, should contain 6 colons (:)" unless stamp.count(':') == 6
     parts = stamp.split(":")
     version, bits, date, resource, ext, rand, counter = parts
 
-    raise "stamp version #{version} not supported" unless version == STAMP_VERSION.to_s
+    raise "Stamp version #{version} not supported" unless version == STAMP_VERSION.to_s
 
     Hashcash::Stamp.new(
       resource,
