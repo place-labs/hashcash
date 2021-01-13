@@ -11,7 +11,7 @@ module Hashcash
   # => 1:16:201206222403:hello:goodbyye:kfwaGRadlD3ddc9G:MTMxMzY5NQ==
   def self.generate(
     resource : String,
-    version = 1,
+    version = "1",
     bits = 20,
     date = Time.utc,
     ext = ""

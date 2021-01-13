@@ -4,12 +4,12 @@ class Hashcash::Stamp
 
   def initialize(
     @resource : String,
-    @version = STAMP_VERSION,
-    @bits = 20,
+    @version : String = STAMP_VERSION,
+    @bits : Int32 = 20,
     @date = Time.utc,
-    @ext = "",
-    @rand = Random::Secure.base64(12),
-    @counter = 0
+    @ext : String = "",
+    @rand : String = Random::Secure.base64(12),
+    @counter : Int32 = 0
   )
   end
 
@@ -44,7 +44,7 @@ class Hashcash::Stamp
 
     Hashcash::Stamp.new(
       resource,
-      version.to_i,
+      version,
       bits.to_i,
       Time.parse_utc(date, "%y%m%d%H%M%S"),
       ext,

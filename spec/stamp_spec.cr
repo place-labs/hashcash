@@ -8,15 +8,15 @@ describe Hashcash::Stamp do
     new_stamp.resource.should eq "gab@place.technology"
     new_stamp.bits.should eq 20
     new_stamp.date.hour.should eq Time.utc.hour
-    new_stamp.version.should eq 1
+    new_stamp.version.should eq "1"
     new_stamp.counter.should be_a Int32
     new_stamp.rand.should be_a String
 
     # all of the args
-    custom_stamp = Hashcash::Stamp.new("hi@hello.com", 2, 16, Time.utc, "goodbye")
+    custom_stamp = Hashcash::Stamp.new("hi@hello.com", "2", 16, Time.utc, "goodbye")
 
     custom_stamp.resource.should eq "hi@hello.com"
-    custom_stamp.version.should eq 2
+    custom_stamp.version.should eq "2"
     custom_stamp.bits.should eq 16
     custom_stamp.date.hour.should eq Time.utc.hour
   end
@@ -27,7 +27,7 @@ describe Hashcash::Stamp do
     new_stamp.should start_with "1:20:"
     new_stamp.should contain ":gab@place.technology::"
 
-    custom_stamp = Hashcash::Stamp.new("hi@hello.com", 2, 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye").to_s
+    custom_stamp = Hashcash::Stamp.new("hi@hello.com", "2", 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye").to_s
     custom_stamp.should be_a String
     custom_stamp.should start_with "2:16:160215102030:hi@hello.com:goodbye:"
   end
@@ -51,7 +51,7 @@ describe Hashcash::Stamp do
     Hashcash.verify?(new_stamp_string, "hello").should eq true
 
     # with all of the args
-    custom_stamp = Hashcash::Stamp.new("hi@hello.com", 1, 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye")
+    custom_stamp = Hashcash::Stamp.new("hi@hello.com", "1", 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye")
     custom_stamp.counter.should eq 0
     custom_stamp.to_s.should end_with ":MA=="
     Hashcash.verify?(custom_stamp.to_s, "hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq false
@@ -67,7 +67,7 @@ describe Hashcash::Stamp do
   it ".parse" do
     parsed_string = Hashcash::Stamp.parse("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==")
 
-    parsed_string.version.should eq 1
+    parsed_string.version.should eq "1"
     parsed_string.bits.should eq 20
     parsed_string.date.should be_a Time
     parsed_string.resource.should eq "resource"
@@ -78,18 +78,8 @@ describe Hashcash::Stamp do
   end
 
   it "should not parse an invalid stamp" do
-    begin
-      Hashcash::Stamp.parse("invalid_stamp")
-    rescue e
-      e.should be_a(Exception)
-      e.message.should eq "Invalid stamp format, should contain 6 colons (:)"
-    end
-
-    begin
-      Hashcash::Stamp.parse("2:12:160215102030:hello@email.com:bye:invalid_stamp:counter")
-    rescue e
-      e.message.to_s.should eq "Stamp version 2 not supported"
-    end
+    expect_raises(Exception) { Hashcash::Stamp.parse("invalid_stamp") }
+    expect_raises(Exception) { Hashcash::Stamp.parse("2:12:160215102030:hello@email.com:bye:invalid_stamp:counter") }
   end
 
   it "#is_for?" do
