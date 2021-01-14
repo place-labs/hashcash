@@ -40,7 +40,7 @@ describe Hashcash::Stamp do
     # string should be invalid here
     Hashcash.verify?(new_stamp.to_s, "hello").should eq false
 
-    new_stamp.update_counter # this method might be renamed
+    new_stamp.update_counter
     new_stamp.counter.should be > 0
 
     new_stamp_string = new_stamp.to_s

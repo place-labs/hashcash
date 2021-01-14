@@ -40,7 +40,7 @@ class Hashcash::Stamp
     parts = stamp.split(":")
     version, bits, date, resource, ext, rand, counter = parts
 
-    raise "Stamp version #{version} not supported" unless version == STAMP_VERSION.to_s
+    raise "Stamp version #{version} not supported" unless version == STAMP_VERSION
 
     Hashcash::Stamp.new(
       resource,
