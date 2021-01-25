@@ -36,7 +36,7 @@ describe Hashcash do
     Hashcash.valid?(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30), 40).should be_false
   end
 
-  it ".verify!" do
+  it ".valid!" do
     string = "1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng=="
 
     Hashcash.valid!(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)).should be_nil
