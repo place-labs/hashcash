@@ -1,24 +1,26 @@
 require "./spec_helper"
 
 describe Hashcash::Stamp do
-  it ".new" do
-    # just resource arg
-    new_stamp = Hashcash::Stamp.new("gab@place.technology")
+  describe ".initialize" do
+    it "accepts just a resource arg" do
+      new_stamp = Hashcash::Stamp.new("gab@place.technology")
 
-    new_stamp.resource.should eq "gab@place.technology"
-    new_stamp.bits.should eq 20
-    new_stamp.date.hour.should eq Time.utc.hour
-    new_stamp.version.should eq "1"
-    new_stamp.counter.should be_a Int32
-    new_stamp.rand.should be_a String
+      new_stamp.resource.should eq "gab@place.technology"
+      new_stamp.bits.should eq 20
+      new_stamp.date.hour.should eq Time.utc.hour
+      new_stamp.version.should eq "1"
+      new_stamp.counter.should be_a Int32
+      new_stamp.rand.should be_a String
+    end 
 
-    # all of the args
-    custom_stamp = Hashcash::Stamp.new("hi@hello.com", "2", 16, Time.utc, "goodbye")
+    it "accepts a full set of stamp parameters" do
+      custom_stamp = Hashcash::Stamp.new("hi@hello.com", "2", 16, Time.utc, "goodbye")
 
-    custom_stamp.resource.should eq "hi@hello.com"
-    custom_stamp.version.should eq "2"
-    custom_stamp.bits.should eq 16
-    custom_stamp.date.hour.should eq Time.utc.hour
+      custom_stamp.resource.should eq "hi@hello.com"
+      custom_stamp.version.should eq "2"
+      custom_stamp.bits.should eq 16
+      custom_stamp.date.hour.should eq Time.utc.hour
+    end
   end
 
   it "#to_s" do
@@ -32,36 +34,35 @@ describe Hashcash::Stamp do
     custom_stamp.should start_with "2:16:160215102030:hi@hello.com:goodbye:"
   end
 
-  it "#update_counter" do
-    new_stamp = Hashcash::Stamp.new("hello")
-    new_stamp.counter.should eq 0
-    # when counter is 0, string should end with 0 base64 encoded (MA==)
-    new_stamp.to_s.should end_with ":MA=="
-    # string should be invalid here
-    Hashcash.verify?(new_stamp.to_s, "hello").should eq false
+  describe "#update_counter" do
+    it "accepts just a resource arg" do
+      new_stamp = Hashcash::Stamp.new("hello")
 
-    new_stamp.update_counter
-    new_stamp.counter.should be > 0
+      # string should be invalid here
+      Hashcash.valid?(new_stamp.to_s, "hello").should eq false
 
-    new_stamp_string = new_stamp.to_s
-    new_stamp_string.should contain ":hello::"
-    new_stamp_string.should start_with "1:20:"
+      new_stamp.update_counter
+      new_stamp.counter.should be > 0
 
-    # string should now be valid
-    Hashcash.verify?(new_stamp_string, "hello").should eq true
+      new_stamp_string = new_stamp.to_s
+      new_stamp_string.should contain ":hello::"
+      new_stamp_string.should start_with "1:20:"
 
-    # with all of the args
-    custom_stamp = Hashcash::Stamp.new("hi@hello.com", "1", 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye")
-    custom_stamp.counter.should eq 0
-    custom_stamp.to_s.should end_with ":MA=="
-    Hashcash.verify?(custom_stamp.to_s, "hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq false
+      # string should now be valid
+      Hashcash.valid?(new_stamp_string, "hello").should eq true
+    end
 
-    custom_stamp.update_counter
-    custom_stamp.counter.should be > 0
+    it "accepts a full set of stamp parameters" do
+      custom_stamp = Hashcash::Stamp.new("hi@hello.com", "1", 16, Time.utc(2016, 2, 15, 10, 20, 30), "goodbye")
+      Hashcash.valid?(custom_stamp.to_s, "hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq false
 
-    custom_stamp_string = custom_stamp.to_s
-    custom_stamp_string.should start_with "1:16:160215102030:hi@hello.com:goodbye:"
-    Hashcash.verify?(custom_stamp_string, "hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq true
+      custom_stamp.update_counter
+      custom_stamp.counter.should be > 0
+
+      custom_stamp_string = custom_stamp.to_s
+      custom_stamp_string.should start_with "1:16:160215102030:hi@hello.com:goodbye:"
+      Hashcash.valid?(custom_stamp_string, "hi@hello.com", Time.utc(2016, 1, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30), 16).should eq true
+    end
   end
 
   it ".parse" do
@@ -110,7 +111,6 @@ describe Hashcash::Stamp do
     invalid_stamp = Hashcash::Stamp.parse("1:19:201207232233:hello::/AwX0LmTwb3g7nx9:NjAwNDcz")
     invalid_stamp.correct_bits?(20).should eq false
 
-    # custom bits
     parsed_stamp2 = Hashcash::Stamp.parse("1:12:210106054523:hello::gyJzsWmtmKpDiWRP:Nzc1Mw==")
     parsed_stamp2.correct_bits?(12).should eq true
     parsed_stamp2.correct_bits?.should eq true

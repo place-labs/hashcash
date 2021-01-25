@@ -12,7 +12,7 @@ module Hashcash
   def self.generate(
     resource : String,
     version = "1",
-    bits = 20,
+    bits = Stamp::DEFAULT_BITS,
     date = Time.utc,
     ext = ""
   ) : String
@@ -25,22 +25,22 @@ module Hashcash
   # => true
   # Hashcash.verify?("invalid_string", "resource")
   # => false
-  def self.verify?(
+  def self.valid?(
     stamp_string : String,
     resource : String,
-    time_window = 2.days.ago..2.days.from_now,
-    bits = 20
+    time_window = Stamp::DEFAULT_TIME_WINDOW,
+    bits = Stamp::DEFAULT_BITS
   ) : Bool
     stamp = Hashcash::Stamp.parse(stamp_string)
     stamp.is_for?(resource) && stamp.valid?(time_window) && stamp.correct_bits?(bits)
   end
 
   # TODO doc for this method
-  def self.verify!(
+  def self.valid!(
     stamp_string : String,
     resource : String,
-    time_window = 2.days.ago..2.days.from_now,
-    bits = 20
+    time_window = Stamp::DEFAULT_TIME_WINDOW,
+    bits = Stamp::DEFAULT_BITS
   ) : Nil
     stamp = Hashcash::Stamp.parse(stamp_string)
 

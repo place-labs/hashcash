@@ -1,15 +1,17 @@
 class Hashcash::Stamp
   STAMP_VERSION = "1"
+  DEFAULT_BITS = 20
+  DEFAULT_TIME_WINDOW = 2.days.ago..2.days.from_now
   getter version, bits, date, resource, ext, rand, counter
 
   def initialize(
     @resource : String,
     @version : String = STAMP_VERSION,
-    @bits : Int32 = 20,
+    @bits : Int32 = DEFAULT_BITS,
     @date = Time.utc,
     @ext : String = "",
     @rand : String = Random::Secure.base64(12),
-    @counter : Int32 = 0
+    @counter : Int32 = Random.new.rand(1000)
   )
   end
 
@@ -24,7 +26,7 @@ class Hashcash::Stamp
     io << ':'
     io << bits
     io << ':'
-    io << date.to_s("%y%m%d%H%M%S")
+    date.to_s(io, "%y%m%d%H%M%S")
     io << ':'
     io << resource
     io << ':'
@@ -32,7 +34,7 @@ class Hashcash::Stamp
     io << ':'
     io << rand
     io << ':'
-    io << Base64.encode(counter.to_s).chomp
+    Base64.strict_encode(counter.to_s, io)
   end
 
   def self.parse(stamp : String)
@@ -57,7 +59,7 @@ class Hashcash::Stamp
     self.resource == resource
   end
 
-  def valid?(window : Range(Time, Time) = 2.days.ago..2.days.from_now) : Bool
+  def valid?(window : Range(Time, Time) = DEFAULT_TIME_WINDOW) : Bool
     window.includes?(date)
   end
 
@@ -67,7 +69,7 @@ class Hashcash::Stamp
   end
 
   # TODO update method to count the number of 0s at the start rather than check it matches
-  private def check(digest : Bytes, bits = 20) : Bool
+  private def check(digest : Bytes, bits = DEFAULT_BITS) : Bool
     full_bytes = bits // 8
     extra_bits = bits % 8
 
