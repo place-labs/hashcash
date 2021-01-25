@@ -1,7 +1,8 @@
 class Hashcash::Stamp
-  STAMP_VERSION = "1"
-  DEFAULT_BITS = 20
+  STAMP_VERSION       = "1"
+  DEFAULT_BITS        = 20
   DEFAULT_TIME_WINDOW = 2.days.ago..2.days.from_now
+
   getter version, bits, date, resource, ext, rand, counter
 
   def initialize(
@@ -11,7 +12,7 @@ class Hashcash::Stamp
     @date = Time.utc,
     @ext : String = "",
     @rand : String = Random::Secure.base64(12),
-    @counter : Int32 = Random.new.rand(1000)
+    @counter : Int32 = rand(Int32::MAX)
   )
   end
 
