@@ -11,7 +11,7 @@ describe Hashcash::Stamp do
       new_stamp.version.should eq "1"
       new_stamp.counter.should be_a Int32
       new_stamp.rand.should be_a String
-    end 
+    end
 
     it "accepts a full set of stamp parameters" do
       custom_stamp = Hashcash::Stamp.new("hi@hello.com", "2", 16, Time.utc, "goodbye")
