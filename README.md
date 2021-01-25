@@ -29,8 +29,10 @@ To generate a hashcash string:
 To verify a hashcash string:
 
   ``` crystal
-  Hashcash.verify?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
+  Hashcash.valid?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
   # => true
+  Hashcash.valid!("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
+  # => nil (or raise exception if invalid)
   ```
 
 ## Contributing

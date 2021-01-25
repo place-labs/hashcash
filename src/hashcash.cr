@@ -21,9 +21,9 @@ module Hashcash
     hc.to_s
   end
 
-  # Hashcash.verify?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
+  # Hashcash.valid?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
   # => true
-  # Hashcash.verify?("invalid_string", "resource")
+  # Hashcash.valid?("invalid_string", "resource")
   # => false
   def self.valid?(
     stamp_string : String,
@@ -35,7 +35,10 @@ module Hashcash
     stamp.is_for?(resource) && stamp.valid?(time_window) && stamp.correct_bits?(bits)
   end
 
-  # TODO doc for this method
+  # Hashcash.valid!("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
+  # => nil
+  # Hashcash.valid!("invalid_string", "resource")
+  # => Exception
   def self.valid!(
     stamp_string : String,
     resource : String,
