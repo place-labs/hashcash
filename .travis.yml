@@ -5,5 +5,3 @@ script:
   - crystal spec --verbose
   # Format
   - crystal tool format --check
-  # Lint
-  - ./bin/ameba
