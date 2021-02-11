@@ -1,0 +1,7 @@
+language: crystal
+
+script:
+  # Spec
+  - crystal spec --verbose
+  # Format
+  - crystal tool format --check
