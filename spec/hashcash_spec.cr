@@ -1,35 +1,48 @@
 require "./spec_helper"
 
 describe Hashcash do
-  it "should initialise a new hashcash instance" do
-    new_stamp = Hashcash::Stamp.new("gab@place.technology")
+  describe ".generate" do
+    it "accepts just a resource arg" do
+      new_stamp = Hashcash.generate("myemail@email.com")
 
-    new_stamp.stamp_string.should contain "gab@place.technology"
-    new_stamp.resource.should eq "gab@place.technology"
-    new_stamp.bits.should eq 20
-    new_stamp.date.hour.should eq Time.utc.hour
-    new_stamp.version.should eq 1
-  end
-
-  it ".generate" do
-    new_stamp = Hashcash::Stamp.new("gab@place.technology")
-    new_stamp_string = new_stamp.generate("hello")
-
-    new_stamp_string.should contain "hello"
-    new_stamp_string[0].should eq '1'
-    new_stamp_string.should contain "1:20:"
-    new_stamp.stamp_string.should contain "hello"
-  end
-
-  # test verify method
-  describe ".verify" do
-    it "(+)" do
-      new_stamp = Hashcash::Stamp.new("gab@place.technology")
-      new_stamp_string = new_stamp.stamp_string
-      new_stamp.verify_stamp(new_stamp_string)
+      new_stamp.should be_a String
+      new_stamp.should contain "1:20:"
+      new_stamp.should contain ":myemail@email.com::"
     end
 
-    it "(-)" do
+    it "accepts a full set of stamp parameters" do
+      custom_stamp = Hashcash.generate("hello@email.com", bits: 16)
+      custom_stamp.should be_a String
+      custom_stamp.should contain "1:16:"
+      custom_stamp.should contain ":hello@email.com::"
+
+      custom_stamp2 = Hashcash.generate("hello@email.com", version: "2", bits: 12, date: Time.utc(2016, 2, 15, 10, 20, 30), ext: "bye")
+      custom_stamp2.should be_a String
+      custom_stamp2.should contain "2:12:160215102030:hello@email.com:bye:"
+
+      custom_stamp3 = Hashcash.generate("hello@email.com", date: Time.utc(2016, 2, 15, 10, 20, 30), bits: 12, ext: "bye", version: "2")
+      custom_stamp3.should be_a String
+      custom_stamp3.should contain "2:12:160215102030:hello@email.com:bye:"
     end
+  end
+
+  it ".valid?" do
+    string = "1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng=="
+
+    Hashcash.valid?(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)).should be_true
+    Hashcash.valid?(string, "hello", Time.utc(2019, 12, 7, 23, 22, 33)..Time.utc(2019, 12, 7, 23, 22, 33)).should be_false
+    Hashcash.valid?(string, "goodbye").should be_false
+    Hashcash.valid?(string, "hello", Time.utc(2016, 2, 15, 10, 20, 30)..Time.utc(2017, 2, 15, 10, 20, 30)).should be_false
+    Hashcash.valid?(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30), 40).should be_false
+  end
+
+  it ".valid!" do
+    string = "1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng=="
+
+    Hashcash.valid!(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)).should be_nil
+
+    expect_raises(Expired) { Hashcash.valid!(string, "hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30)) }
+    expect_raises(InvalidResource) { Hashcash.valid!(string, "goodbye") }
+    expect_raises(InvalidPreimage) { Hashcash.valid!("1:20:210107002222:hello::4eGAF9pYLrO7AuT8:MA==", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)) }
   end
 end
