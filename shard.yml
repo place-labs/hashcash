@@ -4,6 +4,6 @@ version: 0.1.0
 authors:
   - Gab Fitzgerald gab@place.technology
 
-crystal: 0.35.1
+crystal: ">= 0.35.1, < 2"
 
 license: MIT
