@@ -11,8 +11,7 @@ describe Hashcash do
     new_stamp.version.should eq 1
   end
 
-  # test generate method
-  it "should generate a hashcash stamp string" do
+  it ".generate" do
     new_stamp = Hashcash::Stamp.new("gab@place.technology")
     new_stamp_string = new_stamp.generate("hello")
 
@@ -23,14 +22,14 @@ describe Hashcash do
   end
 
   # test verify method
-  it "should verify a valid hashcash stamp" do
-    new_stamp = Hashcash::Stamp.new("gab@place.technology")
-    new_stamp_string = new_stamp.stamp_string
-    puts new_stamp
-    puts new_stamp_string
-    new_stamp.verify_stamp(new_stamp_string)
-  end
+  describe ".verify" do
+    it "(+)" do
+      new_stamp = Hashcash::Stamp.new("gab@place.technology")
+      new_stamp_string = new_stamp.stamp_string
+      new_stamp.verify_stamp(new_stamp_string)
+    end
 
-  it "should not verify an invalid hashcash stamp" do
+    it "(-)" do
+    end
   end
 end
