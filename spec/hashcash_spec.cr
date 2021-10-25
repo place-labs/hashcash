@@ -39,10 +39,10 @@ describe Hashcash do
   it ".valid!" do
     string = "1:20:210106063543:hello::/MD1O8MscgavDI6z:MzkyMjM3Ng=="
 
-    Hashcash.valid!(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)).should be_nil
+    Hashcash.valid!(string, "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)).should eq string
 
-    expect_raises(Expired) { Hashcash.valid!(string, "hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30)) }
-    expect_raises(InvalidResource) { Hashcash.valid!(string, "goodbye") }
-    expect_raises(InvalidPreimage) { Hashcash.valid!("1:20:210107002222:hello::4eGAF9pYLrO7AuT8:MA==", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)) }
+    expect_raises(Hashcash::Error, /stamp is expired/) { Hashcash.valid!(string, "hello", Time.utc(2018, 2, 15, 10, 20, 30)..Time.utc(2019, 2, 15, 10, 20, 30)) }
+    expect_raises(Hashcash::Error, /stamp is invalid/) { Hashcash.valid!(string, "goodbye") }
+    expect_raises(Hashcash::Error, /20 bits required/) { Hashcash.valid!("1:20:210107002222:hello::4eGAF9pYLrO7AuT8:MA==", "hello", Time.utc(2019, 2, 15, 10, 20, 30)..Time.utc(2050, 2, 15, 10, 20, 30)) }
   end
 end

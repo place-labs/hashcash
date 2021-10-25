@@ -32,7 +32,8 @@ To verify a hashcash string:
   Hashcash.valid?("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
   # => true
   Hashcash.valid!("1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA==", "resource")
-  # => nil (or raise exception if invalid)
+  # => "1:20:201206222555:resource::pOWgc88+uDuefr/o:MTMxNzg2MA=="
+  # (or raises an exception if invalid)
   ```
 
 ## Contributing
@@ -45,4 +46,5 @@ To verify a hashcash string:
 
 ## Contributors
 
-- [GabFitzgerald](https://github.com/GabFitzgerald) - creator and maintainer
+- [Gab Fitzgerald](https://github.com/GabFitzgerald) - creator
+- [Caspian Baska](https://github.com/caspiano) - maintainer

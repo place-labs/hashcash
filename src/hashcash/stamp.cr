@@ -17,7 +17,7 @@ class Hashcash::Stamp
   end
 
   def update_counter
-    until check (Digest::SHA1.digest self.to_s), bits
+    until check(Digest::SHA1.digest(self.to_s), bits)
       @counter += 1
     end
   end

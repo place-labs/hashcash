@@ -1,9 +1,7 @@
 name: hashcash
-version: 0.1.0
-
-authors:
-  - Gab Fitzgerald gab@place.technology
-
-crystal: ">= 0.35.1, < 2"
-
+version: 1.0.0
+crystal: ">= 1.0.0"
 license: MIT
+authors:
+  - Gab Fitzgerald <gab@place.technology>
+  - Caspian Baska <caspian@place.technology>

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  crystal-style:
+    uses: PlaceOS/.github/.github/workflows/crystal-style.yml@main
+
+  test:
+    name: "${{ !matrix.stable && '🚧 ' || ''}}crystal: ${{ matrix.crystal }}"
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ !matrix.stable }}
+    strategy:
+      fail-fast: false
+      matrix:
+        stable: [true]
+        crystal:
+          - 1.0.0
+          - 1.1.1
+          - 1.2.1
+        include:
+          - crystal: nightly
+            stable: false
+    steps:
+      - uses: crystal-lang/install-crystal@v1.5.3
+        with:
+          crystal: ${{ matrix.crystal }}
+      - uses: actions/checkout@v2
+      - name: Tests
+        run: crystal spec --error-trace --verbose --order=random --no-color
+      - name: Tests Multithreaded
+        run: crystal spec --error-trace --verbose --order=random --no-color -Dpreview_mt
