@@ -1,5 +1,7 @@
 # hashcash
 
+[![CI](https://github.com/place-labs/hashcash/actions/workflows/ci.yml/badge.svg)](https://github.com/place-labs/hashcash/actions/workflows/ci.yml)
+
 Crystal Lang implemenation of [Hashcash](https://en.wikipedia.org/wiki/Hashcash) proof-of-work system.
 
 ## Installation
