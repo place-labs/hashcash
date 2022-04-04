@@ -12,7 +12,7 @@ class Hashcash::Stamp
     @date = Time.utc,
     @ext : String = "",
     @rand : String = Random::Secure.base64(12),
-    @counter : Int32 = rand(Int32::MAX)
+    @counter : Int32 = 0
   )
   end
 
