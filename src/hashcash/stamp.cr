@@ -1,7 +1,6 @@
 class Hashcash::Stamp
-  STAMP_VERSION       = "1"
-  DEFAULT_BITS        = 20
-  DEFAULT_TIME_WINDOW = 2.days.ago..2.days.from_now
+  STAMP_VERSION = "1"
+  DEFAULT_BITS  = 20
 
   getter version, bits, date, resource, ext, rand, counter
 
@@ -14,6 +13,10 @@ class Hashcash::Stamp
     @rand : String = Random::Secure.base64(12),
     @counter : Int32 = 0
   )
+  end
+
+  def self.default_time_window
+    2.days.ago..2.days.from_now
   end
 
   def update_counter
@@ -60,7 +63,7 @@ class Hashcash::Stamp
     self.resource == resource
   end
 
-  def valid?(window : Range(Time, Time) = DEFAULT_TIME_WINDOW) : Bool
+  def valid?(window : Range(Time, Time) = Stamp.default_time_window) : Bool
     window.includes?(date)
   end
 
