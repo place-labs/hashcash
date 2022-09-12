@@ -34,7 +34,7 @@ module Hashcash
   def self.valid?(
     stamp_string : String,
     resource : String,
-    time_window = Stamp::DEFAULT_TIME_WINDOW,
+    time_window = Stamp.default_time_window,
     bits = Stamp::DEFAULT_BITS
   ) : Bool
     valid!(stamp_string, resource, time_window, bits)
@@ -52,7 +52,7 @@ module Hashcash
   def self.valid!(
     stamp_string : String,
     resource : String,
-    time_window = Stamp::DEFAULT_TIME_WINDOW,
+    time_window = Stamp.default_time_window,
     bits = Stamp::DEFAULT_BITS
   ) : String
     stamp = Hashcash::Stamp.parse(stamp_string)
